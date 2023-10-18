@@ -1,23 +1,35 @@
-# Nextra Docs Template 
+# Pelican documentation
 
-This is a template for creating documentation with [Nextra](https://nextra.site).
+## How this repository is set up
 
-[**Live Demo →**](https://nextra-docs-template.vercel.app)
+To ease development of documentation this repository is the one-stop shop for creating new documentation. To do this 
+it uses some symbolic linking both in the files and in git. 
 
-[![](.github/screenshot.png)](https://nextra-docs-template.vercel.app)
+The authoritative copy of the documentation lives in the pelican repo under the `/docs/pages` directory. This repository
+uses git submodules to pull in the pelican repo and a symlink to link those pages to the correct location for the
+documentation to be built. This means that when you change files in the pages directory you will need to commit those to 
+the pelican repo, rather than the `docs` repo.
 
-## Quick Start
+## Editing Documentation
 
-Click the button to clone this repository and deploy it on Vercel:
+This website uses [Nextra](https://nextra.site/) to build the documentation, it is suggested to look at their
+[documentation](https://nextra.site/docs).
 
-[![](https://vercel.com/button)](https://vercel.com/new/clone?s=https%3A%2F%2Fgithub.com%2Fshuding%2Fnextra-docs-template&showOptionalTeamCreation=false)
+Some key documents that would be good to look through are:
+- [Organize Files](https://nextra.site/docs/guide/organize-files)
+- [Markdown](https://nextra.site/docs/guide/markdown)
+- [Custom Doc Components](https://nextra.site/docs/guide/built-ins)
 
-## Local Development
+### Adding Images
 
-First, run `pnpm i` to install the dependencies.
+All images should be added to the `/public` folder. You can add them into the documentation by using the markdown image
+syntax. All the images are served from website root so make sure not to let the image paths collide with the website. 
 
-Then, run `pnpm dev` to start the development server and visit localhost:3000.
+```markdown
+![Image Description](/image-path)
+```
 
-## License
+## Example 
 
-This project is licensed under the MIT License.
+Let's say that I want to add some documentation for some website changes I just made. 
+

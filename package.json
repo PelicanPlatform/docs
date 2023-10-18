@@ -1,7 +1,7 @@
 {
-  "name": "nextra-docs-template",
+  "name": "Pelican Documentation",
   "version": "0.0.1",
-  "description": "Nextra docs template",
+  "description": "Documentation for Pelican",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,15 +9,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/shuding/nextra-docs-template.git"
+    "url": "https://github.com/PelicanPlatform/docs.git "
   },
-  "author": "Shu Ding <g@shud.in>",
+  "author": "Cannon Lock <clock@morgridge.org>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/shuding/nextra-docs-template/issues"
   },
   "homepage": "https://github.com/shuding/nextra-docs-template#readme",
   "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.14.14",
     "next": "^13.0.6",
     "nextra": "latest",
     "nextra-theme-docs": "latest",

@@ -1,0 +1,7 @@
+div.nextra-nav-container:not(.nextra-toc) {
+    background-color: #0099ff !important;
+}
+
+:is(html[class~=dark] body) div.nextra-nav-container:not(.nextra-toc) {
+    background-color: #11659e !important;
+}

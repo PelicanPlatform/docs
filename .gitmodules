@@ -1,0 +1,4 @@
+[submodule "pelican"]
+	path = pelican
+	url = https://github.com/PelicanPlatform/pelican.git
+    branch = main
