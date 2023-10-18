@@ -9,13 +9,22 @@ const withNextra = require('nextra')({
 
 const config = (phase, { defaultConfig }) => {
 
-  // Set up the pages symlink to whatever pelican repo is desired
+  // Set up the pages symlink to point at pelican repo identified by PELICAN_PATH
   fs.rmSync('./pages', { recursive: true, force: true })
   fs.symlink(
-    process.env.PELICAN_PATH + '/docs/pages',
+    path.resolve(process.env.PELICAN_PATH) + '/docs/pages',
       './pages',
     'dir',
     (err) => console.log(err)
+  )
+
+  // Set up the public symlink to point at pelican repo identified by PELICAN_PATH
+  fs.rmSync('./public/pelican', { recursive: true, force: true })
+  fs.symlink(
+      path.resolve(process.env.PELICAN_PATH) + '/docs/public',
+      './public/pelican',
+      'dir',
+      (err) => console.log(err)
   )
 
   return {
