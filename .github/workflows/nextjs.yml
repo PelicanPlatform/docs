@@ -30,7 +30,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Detect package manager
-        working-directory: ./src
         id: detect-package-manager
         run: |
           if [ -f "./yarn.lock" ]; then
