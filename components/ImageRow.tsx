@@ -19,7 +19,7 @@ const ImageRow = ({src, alt, imageContainerProps, textContainerProps, containerP
 				<Grid item xs={12} md={6} {...imageContainerProps}>
 					<ExportedImage width={1000} height={1000} src={src} alt={alt} />
 				</Grid>
-				<Grid item xs={12} md={6} {...textContainerProps}>
+				<Grid item xs={12} md={6} {...textContainerProps} color={"black"}>
 					{children}
 				</Grid>
 			</Grid>
