@@ -22,11 +22,19 @@ Some key documents that would be good to look through are:
 
 ### Editing locally
 
-The docs repo sits on top of the pelican repo to take the content in the docs repo and turn it into a website. To 
-set up the docs repo to sit on top of your local instance of pelican edit the `PELICAN_PATH` variable in `env.local` to 
-point to the root of your local pelican repo. 
+Before you can edit locally on your computer you must edit the `env.local` file so that `PELICAN_PATH` points to your local
+instance of pelican. This will allow the website builder to symlink in the appropriate files so that you can edit your 
+finalize your documentation here, then commit the final product in your own repo.
 
-Once this is done you can run `npm run dev` at root to see your website.
+```shell
+# Install appropriate node_modules
+npm i
+```
+
+```shell
+# Run the dev server to see your documentation
+npm run dev
+```
 
 ### Adding Images
 
