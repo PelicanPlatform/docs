@@ -32,6 +32,14 @@ jobs:
         with:
           submodules: 'recursive'
           fetch-depth: 0
+      - name: Go-Generate
+        run: |
+          # Build the pelican site
+          cd pelican
+          make generate USE_DOCKER=1
+          
+          # Copy the parameters.json file to the /public/static folder
+          cp docs/parameters.json ../public/static/parameters.json
       - name: Detect package manager
         id: detect-package-manager
         run: |
