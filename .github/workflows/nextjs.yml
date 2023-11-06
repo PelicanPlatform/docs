@@ -38,8 +38,12 @@ jobs:
           cd pelican
           make generate USE_DOCKER=1
           
+          echo "Copying the pelican site to the /public folder"
+  
           # Copy the parameters.json file to the /public/static folder
-          cp docs/parameters.json ../public/static/parameters.json
+          cd ..
+          ls
+          cp ./pelican/docs/parameters.json ./public/static/parameters.json
       - name: Detect package manager
         id: detect-package-manager
         run: |
