@@ -41,9 +41,8 @@ jobs:
           echo "Copying the pelican site to the /public folder"
   
           # Copy the parameters.json file to the /public/static folder
-          cd ..
-          ls
-          cp ./pelican/docs/parameters.json ./public/static/parameters.json
+          mkdir -p ../public/static
+          cp docs/parameters.json ../public/static/parameters.json
       - name: Detect package manager
         id: detect-package-manager
         run: |
