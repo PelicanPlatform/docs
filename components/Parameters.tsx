@@ -70,7 +70,6 @@ export default function Parameters({parameters}) {
 	return (
 			<Box>
 				{Object.entries(parameters).map(([name, value]) => {
-					console.log("Outside", name, value)
 					return <ParameterBox name={name} value={value} />
 				})}
 			</Box>
