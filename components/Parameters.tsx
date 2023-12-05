@@ -40,10 +40,11 @@ interface ParameterBoxProps {
 function ParameterBox({name, value}: ParameterBoxProps) {
 
 	if(value?.name == undefined) {
+
 		return (
 				<Box>
 					<Typography pt={2}	variant={`h5`}>{name}</Typography>
-					{Object.entries(value).map(([name, value]) => {
+					{Object.entries(value).map(([name, value]: [string, any]) => {
 						return <ParameterBox name={name} value={value} />
 					})}
 				</Box>
@@ -52,7 +53,8 @@ function ParameterBox({name, value}: ParameterBoxProps) {
 
 	return (
 		<Box>
-			<Typography pt={2} variant={`h6`}>{name}</Typography>
+			<Typography variant={`subtitle2`} mb={-1} mt={2}>{value.name.split(".").slice(0, -1).join(".")}</Typography>
+			<Typography pt={0} variant={`h6`}>{name}</Typography>
 			<Typography py={1} variant={`body1`}>{value.description}</Typography>
 			<Box p={1} bgcolor={"#82828224"} borderRadius={1}>
 				{ value.components ? <Typography variant={`body2`}>Components: {`[${value.components.join(", ")}]`}</Typography> : undefined }
@@ -66,6 +68,8 @@ function ParameterBox({name, value}: ParameterBoxProps) {
 export default function Parameters({parameters}) {
 
 	parameters = formatParameters(parameters)
+	
+	console.log(parameters)
 
 	return (
 			<Box>
