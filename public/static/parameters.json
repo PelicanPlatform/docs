@@ -7,7 +7,7 @@
 			"default": false,
 			"description": "A bool indicating whether Pelican should emit debug messages in its log.",
 			"name": "Debug",
-			"type": "bool"
+			"type": "boolean"
 		}
 	},
 	{
@@ -20,7 +20,7 @@
 			"default": false,
 			"description": "When set to true, Pelican will skip TLS verification.  This allows a \"man in the middle\" attack on the connection but can simplify testing.  Intended for developers.",
 			"name": "TLSSkipVerify",
-			"type": "bool"
+			"type": "boolean"
 		}
 	},
 	{
@@ -47,7 +47,7 @@
 			"default": "10s",
 			"description": "Maximum time allowed for establishing a connection to target host.",
 			"name": "Transport.DialerTimeout",
-			"type": "duration"
+			"type": "time.Duration"
 		}
 	},
 	{
@@ -60,7 +60,7 @@
 			"default": "30s",
 			"description": "Maximum time a TCP connection should be kept alive without any activity.",
 			"name": "Transport.DialerKeepAlive",
-			"type": "duration"
+			"type": "time.Duration"
 		}
 	},
 	{
@@ -73,7 +73,7 @@
 			"default": 30,
 			"description": "Maximum number of idle connections that the HTTP client should maintain in its connection pool.",
 			"name": "Transport.MaxIdleConns",
-			"type": "int"
+			"type": "integer"
 		}
 	},
 	{
@@ -86,7 +86,7 @@
 			"default": "90s",
 			"description": "Maximum duration an idle connection should remain open in the connection pool.",
 			"name": "Transport.IdleConnTimeout",
-			"type": "duration"
+			"type": "time.Duration"
 		}
 	},
 	{
@@ -99,7 +99,7 @@
 			"default": "15s",
 			"description": "Maximum time allowed for the TLS handshake to complete when making an HTTPS connection",
 			"name": "Transport.TLSHandshakeTimeout",
-			"type": "duration"
+			"type": "time.Duration"
 		}
 	},
 	{
@@ -112,7 +112,7 @@
 			"default": "1s",
 			"description": "Timeout to control how long the client should wait for the \"Expect: 100-continue\" response from the server before sending the request body.",
 			"name": "Transport.ExpectContinueTimeout",
-			"type": "duration"
+			"type": "time.Duration"
 		}
 	},
 	{
@@ -125,7 +125,7 @@
 			"default": "10s",
 			"description": "Maximum time the client should wait for the response headers to be received from the server",
 			"name": "Transport.ResponseHeaderTimeout",
-			"type": "duration"
+			"type": "time.Duration"
 		}
 	},
 	{
@@ -210,7 +210,7 @@
 			"default": 100,
 			"description": "A timeout indicating when a \"stopped transfer\" event should be triggered.",
 			"name": "Client.StoppedTransferTimeout",
-			"type": "int"
+			"type": "integer"
 		}
 	},
 	{
@@ -221,7 +221,7 @@
 			"default": 30,
 			"description": "A duration indicating the rampup period for a slow transfer.",
 			"name": "Client.SlowTransferRampupTime",
-			"type": "int"
+			"type": "integer"
 		}
 	},
 	{
@@ -232,7 +232,7 @@
 			"default": 30,
 			"description": "A duration indicating the sliding window over which to consider transfer speeds for slow transfers.",
 			"name": "Client.SlowTransferWindow",
-			"type": "int"
+			"type": "integer"
 		}
 	},
 	{
@@ -243,7 +243,7 @@
 			"default": false,
 			"description": "A bool indicating whether the client's HTTP proxy should be disabled.",
 			"name": "Client.DisableHttpProxy",
-			"type": "bool"
+			"type": "boolean"
 		}
 	},
 	{
@@ -254,7 +254,7 @@
 			"default": false,
 			"description": "A legacy configuration for disabling the client's HTTP proxy. See Client.DisableHttpProxy for new config.",
 			"name": "DisableHttpProxy",
-			"type": "bool"
+			"type": "boolean"
 		}
 	},
 	{
@@ -265,7 +265,7 @@
 			"default": false,
 			"description": "A bool indicating whether the a proxy fallback should be used by the client.",
 			"name": "Client.DisableProxyFallback",
-			"type": "bool"
+			"type": "boolean"
 		}
 	},
 	{
@@ -276,7 +276,7 @@
 			"default": false,
 			"description": "A legacy configuration for disabling the client's proxy fallback. See Client.DisableProxyFallback for new config.",
 			"name": "DisableProxyFallback",
-			"type": "bool"
+			"type": "boolean"
 		}
 	},
 	{
@@ -287,7 +287,7 @@
 			"default": 102400,
 			"description": "The minimum speed allowed for a client download before an error is thrown.",
 			"name": "Client.MinimumDownloadSpeed",
-			"type": "int"
+			"type": "integer"
 		}
 	},
 	{
@@ -298,7 +298,7 @@
 			"default": 102400,
 			"description": "A legacy configuration for setting the client's minimum download speed. See Client.MinimumDownloadSpeed for new config.",
 			"name": "MinimumDownloadSpeed",
-			"type": "int"
+			"type": "integer"
 		}
 	},
 	{
@@ -343,7 +343,7 @@
 			"description": "A bool indicating whether an origin is \"multiuser\", ie whether the underlying XRootD instance must be configured in multi user mode.",
 			"name": "Origin.Multiuser",
 			"root_default": true,
-			"type": "bool"
+			"type": "boolean"
 		}
 	},
 	{
@@ -354,7 +354,7 @@
 			"default": true,
 			"description": "A bool indicating whether the origin should enable the `cmsd` daemon.",
 			"name": "Origin.EnableCmsd",
-			"type": "bool"
+			"type": "boolean"
 		}
 	},
 	{
@@ -376,7 +376,7 @@
 			"default": true,
 			"description": "A bool indicating whether the origin should perform self health checks.",
 			"name": "Origin.SelfTest",
-			"type": "bool"
+			"type": "boolean"
 		}
 	},
 	{
@@ -387,7 +387,7 @@
 			"default": false,
 			"description": "Enable the built-in issuer daemon for the origin.",
 			"name": "Origin.EnableIssuer",
-			"type": "bool"
+			"type": "boolean"
 		}
 	},
 	{
@@ -510,7 +510,7 @@
 			"default": 8444,
 			"description": "The port number the Pelican web interface will be bound to.",
 			"name": "Server.Port",
-			"type": "int"
+			"type": "integer"
 		}
 	},
 	{
@@ -650,7 +650,7 @@
 			"default": 8443,
 			"description": "The port over which XRootD should be made available.",
 			"name": "Xrootd.Port",
-			"type": "int"
+			"type": "integer"
 		}
 	},
 	{
@@ -794,7 +794,7 @@
 			"default": 9930,
 			"description": "The lower end of a range of monitoring ports for Prometheus configuration.",
 			"name": "Monitoring.PortLower",
-			"type": "int"
+			"type": "integer"
 		}
 	},
 	{
@@ -805,7 +805,7 @@
 			"default": 9999,
 			"description": "The lower end of a range of monitoring ports for Prometheus configuration.",
 			"name": "Monitoring.PortHigher",
-			"type": "int"
+			"type": "integer"
 		}
 	},
 	{
@@ -827,7 +827,7 @@
 			"default": false,
 			"description": "Flag to specify HTCondor hook behavior",
 			"name": "StagePlugin.Hook",
-			"type": "bool"
+			"type": "boolean"
 		}
 	},
 	{
