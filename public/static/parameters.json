@@ -5,7 +5,7 @@
 				"*"
 			],
 			"default": false,
-			"description": "A bool indicating whether Pelican should emit debug messages in its log.",
+			"description": "A boolean indicating whether Pelican should emit debug messages in its log.",
 			"name": "Debug",
 			"type": "boolean"
 		}
@@ -241,7 +241,7 @@
 				"client"
 			],
 			"default": false,
-			"description": "A bool indicating whether the client's HTTP proxy should be disabled.",
+			"description": "A boolean indicating whether the client's HTTP proxy should be disabled.",
 			"name": "Client.DisableHttpProxy",
 			"type": "boolean"
 		}
@@ -263,7 +263,7 @@
 				"client"
 			],
 			"default": false,
-			"description": "A bool indicating whether the a proxy fallback should be used by the client.",
+			"description": "A boolean indicating whether the a proxy fallback should be used by the client.",
 			"name": "Client.DisableProxyFallback",
 			"type": "boolean"
 		}
@@ -340,7 +340,7 @@
 				"origin"
 			],
 			"default": false,
-			"description": "A bool indicating whether an origin is \"multiuser\", ie whether the underlying XRootD instance must be configured in multi user mode.",
+			"description": "A boolean indicating whether an origin is \"multiuser\", ie whether the underlying XRootD instance must be configured in multi user mode.",
 			"name": "Origin.Multiuser",
 			"root_default": true,
 			"type": "boolean"
@@ -352,7 +352,7 @@
 				"origin"
 			],
 			"default": true,
-			"description": "A bool indicating whether the origin should enable the `cmsd` daemon.",
+			"description": "A boolean indicating whether the origin should enable the `cmsd` daemon.",
 			"name": "Origin.EnableCmsd",
 			"type": "boolean"
 		}
@@ -374,7 +374,7 @@
 				"origin"
 			],
 			"default": true,
-			"description": "A bool indicating whether the origin should perform self health checks.",
+			"description": "A boolean indicating whether the origin should perform self health checks.",
 			"name": "Origin.SelfTest",
 			"type": "boolean"
 		}
