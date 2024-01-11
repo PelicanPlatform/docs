@@ -11,6 +11,10 @@ const config: DocsThemeConfig = {
       </>
   ),
   docsRepositoryBase: "https://github.com/PelicanPlatform/pelican/tree/main/docs",
+  useNextSeoProps() {
+    return {
+      titleTemplate: '%s – Pelican Documentation',
+    }},
   head: (
       <>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -27,6 +31,7 @@ const config: DocsThemeConfig = {
   footer: {
     text: 'Pelican Documentation',
   },
+  
 }
 
 export default config
