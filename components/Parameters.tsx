@@ -1,6 +1,5 @@
-import { Box } from '@mui/material';
+import { Box, Paper, Typography, Autocomplete, TextField } from '@mui/material';
 import React from "react";
-import { Typography	} from "@mui/material";
 
 
 const drillDown = (object, keys, value) => {
@@ -16,6 +15,21 @@ const drillDown = (object, keys, value) => {
 		}
 	})
 }
+
+const collectAutocompleteOptions = (parameters, prefix = '') => {
+	let options = [];
+	for (const [key, value] of Object.entries(parameters)) {
+	if (typeof value === 'object' && value !== null && !Array.isArray(value) && (value as { name: string }).name) {
+		// If it's an object with a name, add its full path to the options
+		const fullPath = `${prefix}${key}`;
+		options.push(fullPath);
+	  } else if (typeof value === 'object' && value !== null) {
+		// If it's a nested object, recursively collect names
+		options = [...options, ...collectAutocompleteOptions(value, `${prefix}${key}.`)];
+	  }
+	}
+	return options;
+  };
 
 const formatParameters = (parameters) => {
 
@@ -38,12 +52,11 @@ interface ParameterBoxProps {
 }
 
 function ParameterBox({name, value}: ParameterBoxProps) {
-
 	if(value?.name == undefined) {
 
 		return (
 				<Box>
-					<Typography pt={2}	variant={`h5`}>{name}</Typography>
+					<Typography pt={2}	mb={-2} variant={`h5`} sx={{ textDecoration: 'underline' }}>{name}</Typography>
 					{Object.entries(value).map(([name, value]: [string, any]) => {
 						return <ParameterBox name={name} value={value} />
 					})}
@@ -52,15 +65,15 @@ function ParameterBox({name, value}: ParameterBoxProps) {
 	}
 
 	return (
-		<Box>
-			<Typography variant={`subtitle2`} mb={-1} mt={2}>{value.name.split(".").slice(0, -1).join(".")}</Typography>
-			<Typography pt={0} variant={`h6`}>{name}</Typography>
-			<Typography py={1} variant={`body1`}>{value.description}</Typography>
-			<Box p={1} bgcolor={"#82828224"} borderRadius={1}>
+		<Box id={value.name} sx={{marginTop:"2em"}}>
+			<Typography variant={`subtitle2`} mb={-1}>{value.name.split(".").slice(0, -1).join(".")}</Typography>
+			<Typography pt={0} pb={1} variant={`h6`}>{name}</Typography>
+			<Paper elevation={2} sx={{padding:"0.7em"}}>
+				<Typography variant={`body1`}>{value.description}</Typography>
 				{ value.components ? <Typography variant={`body2`}>Components: {`[${value.components.join(", ")}]`}</Typography> : undefined }
 				<Typography variant={`body2`}>Type: {value.type}</Typography>
 				<Typography variant={`body2`}>Default: {value.default == "" ? "\"\"" : value.default}</Typography>
-			</Box>
+			</Paper>
 		</Box>
 	)
 }
@@ -68,11 +81,24 @@ function ParameterBox({name, value}: ParameterBoxProps) {
 export default function Parameters({parameters}) {
 
 	parameters = formatParameters(parameters)
-	
-	console.log(parameters)
+	const autocompleteOptions = collectAutocompleteOptions(parameters);
+
+	const handleAutocompleteChange = (event, value) => {
+		const element = document.getElementById(value);
+		if (element) {
+		  element.scrollIntoView({ behavior: 'smooth' });
+		}
+	  };
 
 	return (
 			<Box>
+				<Autocomplete
+					disablePortal
+					options={autocompleteOptions}
+					sx={{ width: 300, marginLeft: 'auto', marginRight: 0 }}
+					renderInput={(params) => <TextField {...params} label="Search..." />}
+					onChange={handleAutocompleteChange}
+				/>
 				{Object.entries(parameters).map(([name, value]) => {
 					return <ParameterBox name={name} value={value} />
 				})}
