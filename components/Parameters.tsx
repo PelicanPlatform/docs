@@ -1,107 +1,115 @@
-import { Box, Paper, Typography, Autocomplete, TextField } from '@mui/material';
-import React from "react";
+import { Box, Paper, Typography, Autocomplete, TextField, Divider } from '@mui/material';
+import React, {useState, useMemo} from "react";
 
+interface ParameterDetail {
+	components: string[];
+	default: boolean | string;
+	description: string;
+	name: string;
+	type: string;
+  }
+  
+interface Parameter {
+	[key: string]: ParameterDetail;
+  }
+  
+type ParametersArray = Parameter[];
 
-const drillDown = (object, keys, value) => {
-	let currentObject = object
-	keys.forEach((key, index) => {
-		if(index === keys.length - 1) {
-			currentObject[key] = value
-		} else {
-			if(currentObject[key] === undefined){
-				currentObject[key] = {}
-			}
-			currentObject = currentObject[key]
-		}
-	})
-}
+const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ parameter }) => {
 
-const collectAutocompleteOptions = (parameters, prefix = '') => {
-	let options = [];
-	for (const [key, value] of Object.entries(parameters)) {
-	if (typeof value === 'object' && value !== null && !Array.isArray(value) && (value as { name: string }).name) {
-		// If it's an object with a name, add its full path to the options
-		const fullPath = `${prefix}${key}`;
-		options.push(fullPath);
-	  } else if (typeof value === 'object' && value !== null) {
-		// If it's a nested object, recursively collect names
-		options = [...options, ...collectAutocompleteOptions(value, `${prefix}${key}.`)];
-	  }
-	}
-	return options;
+	const parts = parameter.name.split('.');
+	const groupName = parts.length > 1 ? parts.slice(0, -1).join('.') : null;
+	const parameterName = parts.length > 1 ? parts[parts.length - 1] : parameter.name;
+
+	return (
+	  <Box id={parameter.name} sx={{ marginTop: "2em" }}>
+		{/* If groupName exists, display it on a separate line */}
+		{groupName && (
+			<Typography variant="subtitle1" component="div" mb={-1}>
+			{groupName}
+			</Typography>
+		)}
+		<Typography variant="h5" >
+			{parameterName}
+		</Typography>
+		<Paper elevation={2} sx={{ padding: "0.7em" }}>
+		  <Typography variant="body1">
+			{parameter.description}
+		  </Typography>
+		  {parameter.components && (
+			<Typography variant="body2">
+			  Components: [{parameter.components.join(", ")}]
+			</Typography>
+		  )}
+		  <Typography variant="body2">
+			Type: {parameter.type}
+		  </Typography>
+		  <Typography variant="body2">
+			Default: {parameter.default === "" ? '""' : parameter.default.toString()}
+		  </Typography>
+		</Paper>
+	  </Box>
+	);
   };
 
-const formatParameters = (parameters) => {
+  const Parameters: React.FC<{ parameters: ParametersArray }> = ({ parameters }) => {
+	const [searchValue, setSearchValue] = useState('');
+  
+	const filteredParameters = useMemo(() => {
+	  const searchLower = searchValue.toLowerCase();
+	  return parameters.filter((parameter) => {
+		const parameterName = Object.keys(parameter)[0].toLowerCase();
+		return parameterName.includes(searchLower);
+	  });
+	}, [searchValue, parameters]);
 
-	let formattedParameters = {}
-
-	for(const parameter of parameters) {
-		let [keyComposite, value] = Object.entries(parameter)[0]
-
-		let keys: string[] = keyComposite.split(".")
-
-		drillDown(formattedParameters, keys, value)
-	}
-
-	return formattedParameters
-}
-
-interface ParameterBoxProps {
-	name: string
-	value: any
-}
-
-function ParameterBox({name, value}: ParameterBoxProps) {
-	if(value?.name == undefined) {
-
-		return (
-				<Box>
-					<Typography pt={2}	mb={-2} variant={`h5`} sx={{ textDecoration: 'underline' }}>{name}</Typography>
-					{Object.entries(value).map(([name, value]: [string, any]) => {
-						return <ParameterBox name={name} value={value} />
-					})}
-				</Box>
-		)
-	}
+	const groupedParameters = useMemo(() => {
+		const groups: { [key: string]: ParameterDetail[] } = {};
+		filteredParameters.forEach((param) => {
+		  const detail = Object.values(param)[0];
+		  const parent = detail.name.split('.').slice(0, -1).join('.');
+		  const group = parent || '';
+	
+		  if (!groups[group]) {
+			groups[group] = [];
+		  }
+		  groups[group].push(detail);
+		});
+		return groups;
+	  }, [filteredParameters]);
 
 	return (
-		<Box id={value.name} sx={{marginTop:"2em"}}>
-			<Typography variant={`subtitle2`} mb={-1}>{value.name.split(".").slice(0, -1).join(".")}</Typography>
-			<Typography pt={0} pb={1} variant={`h6`}>{name}</Typography>
-			<Paper elevation={2} sx={{padding:"0.7em"}}>
-				<Typography variant={`body1`}>{value.description}</Typography>
-				{ value.components ? <Typography variant={`body2`}>Components: {`[${value.components.join(", ")}]`}</Typography> : undefined }
-				<Typography variant={`body2`}>Type: {value.type}</Typography>
-				<Typography variant={`body2`}>Default: {value.default == "" ? "\"\"" : value.default}</Typography>
-			</Paper>
-		</Box>
-	)
-}
-
-export default function Parameters({parameters}) {
-
-	parameters = formatParameters(parameters)
-	const autocompleteOptions = collectAutocompleteOptions(parameters);
-
-	const handleAutocompleteChange = (event, value) => {
-		const element = document.getElementById(value);
-		if (element) {
-		  element.scrollIntoView({ behavior: 'smooth' });
-		}
-	  };
-
-	return (
-			<Box>
-				<Autocomplete
-					disablePortal
-					options={autocompleteOptions}
-					sx={{ width: 300, marginLeft: 'auto', marginRight: 0 }}
-					renderInput={(params) => <TextField {...params} label="Search..." />}
-					onChange={handleAutocompleteChange}
-				/>
-				{Object.entries(parameters).map(([name, value]) => {
-					return <ParameterBox name={name} value={value} />
-				})}
-			</Box>
-	)
-}
+		<Box>
+			<Autocomplete
+				disablePortal
+				options={parameters.map((param) => Object.keys(param)[0])}
+				onInputChange={(_, value) => setSearchValue(value)}
+				sx={{ width: 300, marginBottom: 2, marginLeft: "auto" }}
+				renderInput={(params) => (
+					<TextField
+						{...params}
+						label="Search..."
+						value={searchValue}
+						onChange={(event) => setSearchValue(event.target.value)}
+					/>
+				)}
+			/>
+			{Object.entries(groupedParameters).map(([group, groupParams]) => (
+				<React.Fragment key={group}>
+				<Typography sx={{ marginTop: "2em" }} variant="h4" gutterBottom>{group}</Typography>
+				{group && group !== "" && (
+					<Divider sx={{ height: "0.5em", backgroundColor: "#0885ff", width: "100%", borderRadius: "0.5em" }} />
+				)}
+				{groupParams.map((param, index) => (
+					<ParameterBox key={index} parameter={param} />
+				))}
+				</React.Fragment>
+			))}
+			{filteredParameters.length === 0 && searchValue ? (
+				<Typography variant="h5">No results found</Typography>
+			) : null}
+    	</Box>
+	  );
+	};
+	
+	export default Parameters;
