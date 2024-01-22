@@ -1,4 +1,5 @@
-import { Box, Paper, Typography, Autocomplete, TextField, Divider } from '@mui/material';
+import { Box, Paper, Typography, Autocomplete, TextField, Divider, IconButton} from '@mui/material';
+import {Link} from "@mui/icons-material";
 import React, {useState, useMemo} from "react";
 
 interface ParameterDetail {
@@ -17,37 +18,62 @@ type ParametersArray = Parameter[];
 
 const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ parameter }) => {
 
+	const [hover, setHover] = useState(false);
+
 	const parts = parameter.name.split('.');
 	const groupName = parts.length > 1 ? parts.slice(0, -1).join('.') : null;
 	const parameterName = parts.length > 1 ? parts[parts.length - 1] : parameter.name;
+	const parameterId = parameter.name.replace(".", "-")
 
 	return (
-	  <Box id={parameter.name} sx={{ marginTop: "2em" }}>
-		{/* If groupName exists, display it on a separate line */}
-		{groupName && (
-			<Typography variant="subtitle1" component="div" mb={-1}>
-			{groupName}
-			</Typography>
-		)}
-		<Typography variant="h5" >
-			{parameterName}
-		</Typography>
-		<Paper elevation={2} sx={{ padding: "0.7em" }}>
-		  <Typography variant="body1">
-			{parameter.description}
-		  </Typography>
-		  {parameter.components && (
-			<Typography variant="body2">
-			  Components: [{parameter.components.join(", ")}]
-			</Typography>
-		  )}
-		  <Typography variant="body2">
-			Type: {parameter.type}
-		  </Typography>
-		  <Typography variant="body2">
-			Default: {parameter.default === "" ? '""' : parameter.default.toString()}
-		  </Typography>
-		</Paper>
+	  <Box
+				id={parameterId}
+				sx={{ marginTop: ".8em" }}
+				onMouseEnter={() => setHover(true)}
+				onMouseLeave={() => setHover(false)}
+				onClick={async () => {
+					// Copy link to clipboard
+					const url = new URL(window.location.href);
+					url.hash = parameterId;
+					await navigator.clipboard.writeText(url);
+				}}
+		>
+			<Paper elevation={hover ? 3 : 1} sx={{ padding: "0.7em" }}>
+				<Box mb={1}>
+					<Box display={"flex"} justifyContent={"space-between"}>
+						<Typography variant="h5" >
+							{parameterName}
+						</Typography>
+						{hover && (
+							<IconButton size={"small"}>
+								<Link fontSize={"small"}/>
+							</IconButton>
+						)}
+					</Box>
+					{/* If groupName exists, display it on a separate line */}
+					{groupName && (
+							<Typography variant="subtitle2" component="div">
+								{groupName}
+							</Typography>
+					)}
+				</Box>
+				<Typography variant="body1" mb={1}>
+				{parameter.description}
+				</Typography>
+				<Box p={1} bgcolor={"#e7e7e7"}>
+					{parameter.components && (
+							<Typography variant="body2">
+								Components: [{parameter.components.join(", ")}]
+							</Typography>
+					)}
+					<Typography variant="body2">
+						Type: {parameter.type}
+					</Typography>
+					<Typography variant="body2">
+						Default: {parameter.default === "" ? '""' : parameter.default.toString()}
+					</Typography>
+				</Box>
+			</Paper>
 	  </Box>
 	);
   };
@@ -76,18 +102,19 @@ const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ parameter }) =
 		  groups[group].push(detail);
 		});
 		return groups;
-	  }, [filteredParameters]);
+		}, [filteredParameters]);
 
 	return (
 		<Box>
 			<Autocomplete
-				disablePortal
-				options={parameters.map((param) => Object.keys(param)[0])}
-				onInputChange={(_, value) => setSearchValue(value)}
-				sx={{ width: 300, marginBottom: 2, marginLeft: "auto" }}
-				renderInput={(params) => (
-					<TextField
-						{...params}
+					disablePortal
+					options={parameters.map((param) => Object.keys(param)[0])}
+					onInputChange={(_, value) => setSearchValue(value)}
+					sx={{marginBottom: 2}}
+					fullWidth={true}
+					renderInput={(params) => (
+							<TextField
+									{...params}
 						label="Search..."
 						value={searchValue}
 						onChange={(event) => setSearchValue(event.target.value)}
@@ -96,7 +123,7 @@ const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ parameter }) =
 			/>
 			{Object.entries(groupedParameters).map(([group, groupParams]) => (
 				<React.Fragment key={group}>
-				<Typography sx={{ marginTop: "2em" }} variant="h4" gutterBottom>{group}</Typography>
+				<Typography sx={{ marginTop: ".5em" }} variant="h4" gutterBottom>{group}</Typography>
 				{group && group !== "" && (
 					<Divider sx={{ height: "0.5em", backgroundColor: "#0885ff", width: "100%", borderRadius: "0.5em" }} />
 				)}
