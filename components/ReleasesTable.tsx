@@ -8,20 +8,19 @@ import DownloadIcon from '@mui/icons-material/Download';
 
 
 interface ReleasesTableProps {
+    data: Array<string>;
     rows: FilteredAsset[];
   }
 
-  const ReleasesTable: React.FC<ReleasesTableProps> = ({ rows }) => {
+  const ReleasesTable: React.FC<ReleasesTableProps> = ({ rows, data }) => {
     return(
         <TableContainer component={Paper} sx={{marginTop:"15px"}}>
         <Table aria-label="simple table">
             <TableHead>
             <TableRow>
-                <TableCell align='center'><Typography variant='h6' >Version</Typography></TableCell>
-                <TableCell align='center'><Typography variant='h6' >Operating System</Typography></TableCell>
-                <TableCell align='center'><Typography variant='h6' >Architecture</Typography></TableCell>
-                <TableCell align='center'><Typography variant='h6' >Package</Typography></TableCell>
-                <TableCell align='center'><Typography variant='h6' >Download</Typography></TableCell>
+                {data.map((tableRows) => (
+                <TableCell align='center' key={tableRows}><Typography variant='h6' >{tableRows}</Typography></TableCell>
+                ))}
             </TableRow>
             </TableHead>
             <TableBody>

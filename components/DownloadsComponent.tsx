@@ -1,23 +1,20 @@
 "use client"
-import React, {useState, useEffect} from 'react';
-import OperatingSystems from './OperatingSystems';
-import Architectures from './Architectures';
-import Version from './Version';
+import React, {useState, useEffect, useMemo} from 'react';
+import {Architectures, OperatingSystems, Version} from './Filters';
 import ReleasesTable from './ReleasesTable';
 import { Box } from '@mui/material';
-import { RotatingLines } from "react-loader-spinner";
+import CircularProgress from '@mui/material/CircularProgress';
 import allFilteredAssets, {FilteredAsset} from "../utils/fetchReleases";
 import { useTheme } from '@mui/material/styles';
+import data from '../public/static/releases-table-data.json'
 
 const DownloadsComponent: React.FC  = () => {
     const [originalData, setOriginalData] = useState<FilteredAsset[]>([]);
-    const [displayData, setDisplayData] = useState<FilteredAsset[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [arch, setArch] = React.useState<string>('arm64');
     const [os, setOs] = React.useState<string>('linux');
     const [version, setVersion] = React.useState<string>('v7.4');
-    const [uniqueMinorVersions, setUniqueMinorVersions] = useState<string[]>([]);
 
     const theme = useTheme();
 
@@ -54,63 +51,51 @@ const DownloadsComponent: React.FC  = () => {
 
     useEffect(() => {
         // Function to fetch release assets
-        let ignore = false;
         const fetchAssets = async () => {
-            if (!ignore) {
-                setLoading(true);
+            setLoading(true);
             try {
                 const assets = await allFilteredAssets();
                 setOriginalData(assets); // Save the original data
-                setDisplayData(assets);  // Start with all data displayed
             } catch (e) {
                 setError('Failed to fetch release assets');
                 console.error(e);
             } finally {
                 setLoading(false);
             }
-            } 
         };
         // Call the fetch function
         fetchAssets();
-
-        // Cleanup function to avoid setting state on unmounted component
-        return () => {
-            ignore = true;
-        };
     }, []);
 
-    useEffect(() => {
+    // Compute unique minor versions using useMemo
+    const uniqueMinorVersions= useMemo<string[]>(() => {
         const uniqueMinors = new Set<string>();
         for (const asset of originalData) {
-        const versionComponents = asset.version.split('.');
-        if (versionComponents.length === 3) { // Ensure it's Major.Minor.Patch
-            const majorMinor = `${versionComponents[0]}.${versionComponents[1]}`;
-            uniqueMinors.add(majorMinor);
+            const versionComponents = asset.version.split('.');
+            if (versionComponents.length === 3) {
+                const majorMinor = `${versionComponents[0]}.${versionComponents[1]}`;
+                uniqueMinors.add(majorMinor);
+            }
+            if (uniqueMinors.size === 4) break;
         }
-        if (uniqueMinors.size === 4) break; // Stop after collecting 4 unique minors
-        }
-        setUniqueMinorVersions(Array.from(uniqueMinors));
+        return Array.from(uniqueMinors);
     }, [originalData]);
 
-    useEffect(() => {
+    // Filter data using useMemo
+    const displayData = useMemo(() => {
         const filtered = originalData.filter(asset => {
-            // Filter for architecture
             const archFilter = arch && typeof arch === 'string' && arch.includes('ppc64')
                 ? asset.architecture.includes('ppc64el') || asset.architecture.includes('ppc64le')
                 : asset.architecture === arch;
 
-            // Filter for operating system, if os is set
             const osFilter = os ? asset.operatingSystem.toLowerCase() === os : true;
 
-            // Filter for version, if version is set
             const versionFilter = version ? asset.version.includes(version.toLowerCase()) : true;
 
-            // Return assets that match both filters
             return archFilter && osFilter && versionFilter;
         });
 
-        const displayData = arch === '' && os === '' && version === '' ? originalData : filtered;
-        setDisplayData(displayData);
+        return arch === '' && os === '' && version === '' ? originalData : filtered;
     }, [arch, os, version, originalData]);
         
     return (
@@ -130,13 +115,7 @@ const DownloadsComponent: React.FC  = () => {
             },
         }}>
             {loading ? (
-                <RotatingLines 
-                    strokeColor="grey"
-                    strokeWidth="5"
-                    animationDuration="0.75"
-                    width="96"
-                    visible={true}
-                />
+                <CircularProgress />
             ) : (
                 <>
                     <Box sx={{
@@ -151,11 +130,11 @@ const DownloadsComponent: React.FC  = () => {
                             flexDirection: 'column',
                         },
                     }}>
-                        <OperatingSystems handle={handleOs} defaultOs={os}/>
-                        <Architectures handle={handleArch} defaultArch={arch} />
+                        <OperatingSystems handle={handleOs} defaultOs={os} data={data.operating_systems}/>
+                        <Architectures handle={handleArch} defaultArch={arch} data={data.architectures} />
                         <Version handle={handleVersion} defaultVersion={version} data={uniqueMinorVersions}/>
                     </Box>
-                    <ReleasesTable rows={displayData} />
+                    <ReleasesTable rows={displayData} data={data.table_rows}/>
                 </>
             )}
         </Box>
