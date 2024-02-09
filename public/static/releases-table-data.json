@@ -2,7 +2,7 @@
     "architectures": [
         "arm64",
         "amd64",
-        "ppc64el",
+        "ppc64",
         "x86_64",
         "aarch64"
     ],
@@ -15,7 +15,6 @@
         "Version",
         "Operating System",
         "Architecture",
-        "Package",
-        "Download"
+        "File"
     ]
 }

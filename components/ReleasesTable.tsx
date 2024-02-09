@@ -1,18 +1,17 @@
 import React from 'react';
 import { 
-    Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Link, IconButton} 
+    Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Link} 
     from '@mui/material';
-import { FilteredAsset } from '../utils/fetchReleases';
-import DownloadIcon from '@mui/icons-material/Download';
+import { FilteredRelease } from '../utils/fetchReleases';
 
 
 
 interface ReleasesTableProps {
     data: Array<string>;
-    rows: FilteredAsset[];
-  }
+    release: FilteredRelease;
+}
 
-  const ReleasesTable: React.FC<ReleasesTableProps> = ({ rows, data }) => {
+  const ReleasesTable: React.FC<ReleasesTableProps> = ({ release , data }) => {
     return(
         <TableContainer component={Paper} sx={{marginTop:"15px"}}>
         <Table aria-label="simple table">
@@ -24,20 +23,16 @@ interface ReleasesTableProps {
             </TableRow>
             </TableHead>
             <TableBody>
-            {rows.map((row) => (
-                <TableRow
-                key={row.id}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                <TableCell align='center' component="th" scope="row">
-                    {row.version}
-                </TableCell>
-                <TableCell align='center'>{row.operatingSystem}</TableCell>
-                <TableCell align='center'>{row.architecture}</TableCell>
-                <TableCell align='center'>{row.packageType}</TableCell>
-                <TableCell align='center'><Link href={row.downloadUrl}><IconButton><DownloadIcon color='primary'/></IconButton></Link></TableCell>
-                </TableRow>
-            ))}
+                {release.assets.map((asset, index) => (
+                    <TableRow key={index}>
+                    <TableCell align='center'>{release.version}</TableCell>
+                    <TableCell align='center'>{asset.operatingSystem}</TableCell>
+                    <TableCell align='center'>{asset.architecture}</TableCell>
+                    <TableCell align='center'>
+                        <Link href={asset.downloadUrl}>{asset.name}</Link>
+                    </TableCell>
+                    </TableRow>
+                ))}
             </TableBody>
         </Table>
         </TableContainer>
