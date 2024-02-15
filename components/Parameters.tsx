@@ -1,22 +1,11 @@
-import { Box, Paper, Typography, Autocomplete, TextField, Divider } from '@mui/material';
 import React, {useState, useMemo} from "react";
-
-interface ParameterDetail {
-	components: string[];
-	default: boolean | string;
-	description: string;
-	name: string;
-	type: string;
-  }
-  
-interface Parameter {
-	[key: string]: ParameterDetail;
-  }
-  
-type ParametersArray = Parameter[];
+import { Box, Paper, Typography, Autocomplete, TextField, Divider, useTheme } from "@mui/material";
+import { DarkLightContainer } from '@/utils/darkLightContainer';
+import { ParameterDetail, ParametersArray } from "@/utils/types";
 
 const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ parameter }) => {
 
+	const theme = useTheme();
 	const parts = parameter.name.split('.');
 	const groupName = parts.length > 1 ? parts.slice(0, -1).join('.') : null;
 	const parameterName = parts.length > 1 ? parts[parts.length - 1] : parameter.name;
@@ -79,6 +68,7 @@ const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ parameter }) =
 	  }, [filteredParameters]);
 
 	return (
+		<DarkLightContainer>
 		<Box>
 			<Autocomplete
 				disablePortal
@@ -109,6 +99,7 @@ const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ parameter }) =
 				<Typography variant="h5">No results found</Typography>
 			) : null}
     	</Box>
+		</DarkLightContainer>
 	  );
 	};
 	

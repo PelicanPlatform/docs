@@ -6,11 +6,13 @@
         "x86_64",
         "aarch64"
     ],
+    
     "operating_systems": [
         "linux",
         "darwin",
         "windows"
     ],
+
     "table_rows": [
         "Version",
         "Operating System",
