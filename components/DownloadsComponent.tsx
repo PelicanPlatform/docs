@@ -1,7 +1,8 @@
 "use client"
 import React, { useState, useEffect, useMemo } from 'react';
-import { Box, CircularProgress } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { Box, CircularProgress, PaletteMode } from '@mui/material';
+import { ThemeProvider, createTheme, useMediaQuery } from '@mui/material';
+import CssBaseline from '@mui/material/CssBaseline';
 import fetchFilteredReleases, { FilteredRelease } from "../utils/fetchReleases"; // Update this import based on actual file structure
 import {OperatingSystems, Architectures, Version} from './Filters'; // Ensure these imports are correctly structured
 import ReleasesTable from './ReleasesTable';
@@ -14,9 +15,32 @@ const DownloadsComponent: React.FC = () => {
     const [arch, setArch] = React.useState<string>('x86_64');
     const [os, setOs] = React.useState<string>('linux'); 
     const [version, setVersion] = React.useState<string>('v7.5');
+    // State to hold the current theme
+  const [themeMode, setThemeMode] = React.useState('light');
 
-    const theme = useTheme();
+  // Effect to read theme from localStorage
+  React.useEffect(() => {
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme === 'dark' || storedTheme === 'light') {
+      setThemeMode(storedTheme);
+    } else {
+      // If there is no stored theme, you can default to 'light' or 'dark'
+      // or use system preference: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      setThemeMode('light');
+    }
+  }, []);
 
+  // Create a theme instance with the state
+const theme = React.useMemo(
+    () =>
+        createTheme({
+            palette: {
+                mode: themeMode as PaletteMode, // Fix: Update the type of themeMode to PaletteMode
+            },
+        }),
+    [themeMode] // Recreate the theme only if themeMode changes
+);
+    
     const handleArch = (
         event: React.MouseEvent<HTMLElement, MouseEvent>,
         newArch: string | null,
@@ -103,7 +127,8 @@ const DownloadsComponent: React.FC = () => {
             return <p>{error}</p>;
         } else {
             return (
-                <>
+                <ThemeProvider theme={theme}>
+                <CssBaseline />
                     <Box sx={{
                         display: 'flex',
                         flexDirection: 'row',
@@ -122,7 +147,7 @@ const DownloadsComponent: React.FC = () => {
                     {filteredData.map(release => (
                         <ReleasesTable key={release.version} release={release} data={data.table_rows} /> // Assuming data.table_headers is correct
                     ))}
-                </>
+                </ThemeProvider>
             );
         }
     };
