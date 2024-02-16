@@ -15,7 +15,7 @@ async function fetchFilteredReleases(): Promise<FilteredRelease[]> {
     const [major, minor] = release.tag_name.replace('v', '').split('.').map(Number);
     const majorVersion = `${major}.${minor}`;
 
-    if (majorVersions.size < 4 && !majorVersions.has(majorVersion)) {
+    if (majorVersions.size < 1 && !majorVersions.has(majorVersion)) {
       majorVersions.add(majorVersion);
 
       filteredReleases.push({
