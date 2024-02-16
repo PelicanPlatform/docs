@@ -16,7 +16,6 @@ const DownloadsComponent: React.FC = () => {
     const [selectedOptions, setSelectedOptions] = React.useState({
         arch: 'x86_64',
         os: 'linux',
-        version: 'v7.5'
     });
     
     const theme = useTheme();
@@ -82,14 +81,12 @@ const DownloadsComponent: React.FC = () => {
         return Array.from(unique);
     }, [originalData]);
 
+    
+
     const filteredData = useMemo(() => {
-        // Filter releases based on the selected version
-        const filteredReleases = originalData.filter(release => 
-          selectedOptions.version ? release.version.startsWith(selectedOptions.version) : true
-        );
       
         // Now, filter assets within those releases based on the selected OS and Arch
-        const releasesWithFilteredAssets = filteredReleases.map(release => {
+        const releasesWithFilteredAssets = originalData.map(release => {
           const filteredAssets = release.assets.filter(asset => {
             const osMatch = !selectedOptions.os || asset.operatingSystem.toLowerCase().includes(selectedOptions.os.toLowerCase());
             const archMatch = !selectedOptions.arch || asset.architecture.includes(selectedOptions.arch) || 
@@ -113,7 +110,7 @@ const DownloadsComponent: React.FC = () => {
         }).filter(release => release.assets.length > 0); // Keep only releases with matching assets
       
         return releasesWithFilteredAssets;
-      }, [selectedOptions.arch, selectedOptions.os, selectedOptions.version, originalData]);
+      }, [selectedOptions.arch, selectedOptions.os, originalData]);
       
 
     const renderContent = () => {
