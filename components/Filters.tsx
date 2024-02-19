@@ -1,25 +1,16 @@
 import React from 'react';
 import { Box, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { compatibilityRules, ArchitecturesProps, OperatingSystemsProps, VersionProps } from '../utils/types';
 
-interface VersionProps {
-  handle: (event: React.MouseEvent<HTMLElement, MouseEvent>, newAlignment: string) => void;
-  defaultVersion: string;
-  data: Array<string>;
-}
+export const Architectures:React.FC<ArchitecturesProps> = ({handle, defaultArch, data, defaultOs}) => {
 
-interface ArchitecturesProps {
-  handle: (event: React.MouseEvent<HTMLElement, MouseEvent>, newAlignment: string) => void;
-  defaultArch: string;
-  data: Array<string>;
-}
-
-interface OperatingSystemsProps {
-  handle: (event: React.MouseEvent<HTMLElement, MouseEvent>, newAlignment: string) => void;
-  defaultOs: string;
-  data: Array<string>;
-}
-
-export const Architectures:React.FC<ArchitecturesProps> = ({handle, defaultArch, data}) => {
+  const isDisabled = (arch: string) => {
+    // If an OS is selected, check if the current arch is compatible
+    if (defaultOs) {
+      return !compatibilityRules[defaultOs].includes(arch);
+    }
+    return false;
+  };
   return (
       <Box sx={{ display: "flex", flexDirection:"column", alignItems:"center", margin: "0 10px"}}>
           <Typography variant="overline" display="block" gutterBottom>
@@ -34,7 +25,7 @@ export const Architectures:React.FC<ArchitecturesProps> = ({handle, defaultArch,
               size='small'
           >   
               {data.map((arch) => (
-              <ToggleButton key={arch} value={arch}>{arch}</ToggleButton>
+                <ToggleButton key={arch} value={arch} disabled={isDisabled(arch)}>{arch}</ToggleButton>
               ))}
           </ToggleButtonGroup>
       </Box>
@@ -42,7 +33,17 @@ export const Architectures:React.FC<ArchitecturesProps> = ({handle, defaultArch,
 }
 
 
-export const OperatingSystems:React.FC<OperatingSystemsProps> = ({handle, defaultOs, data}) => {
+export const OperatingSystems:React.FC<OperatingSystemsProps> = ({handle, defaultOs, data, defaultArch}) => {
+
+  const isDisabled = (os: string) => {
+    // If an arch is selected, check if the current os is compatible
+    if (defaultArch) {
+      return !Object.keys(compatibilityRules).some((compatibleOS) => {
+        return compatibilityRules[compatibleOS].includes(defaultArch) && compatibleOS === os;
+      });
+    }
+    return false;
+  };
   return (
       <Box sx={{ display: "flex", flexDirection:"column", alignItems:"center", margin: "0 10px 0 0"}}>
           <Typography variant="overline" display="block" gutterBottom>
@@ -56,8 +57,10 @@ export const OperatingSystems:React.FC<OperatingSystemsProps> = ({handle, defaul
               onChange={handle}
               size='small'
           >   
-              {data.map((operating_systems) => (
-              <ToggleButton key={operating_systems} value={operating_systems}>{operating_systems}</ToggleButton>
+              {data.map((os) => (
+                <ToggleButton key={os} value={os} disabled={isDisabled(os)}>
+                  {os === 'darwin' ? 'MacOS' : os}
+                </ToggleButton>
               ))}
           </ToggleButtonGroup>
       </Box>

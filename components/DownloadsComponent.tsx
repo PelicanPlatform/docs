@@ -1,51 +1,60 @@
 "use client"
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, CircularProgress } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import fetchFilteredReleases, { FilteredRelease } from "../utils/fetchReleases"; // Update this import based on actual file structure
-import {OperatingSystems, Architectures, Version} from './Filters'; // Ensure these imports are correctly structured
+import fetchFilteredReleases from "../utils/fetchReleases";
+import { FilteredRelease } from '../utils/types';
+import {OperatingSystems, Architectures, Version} from './Filters';
 import ReleasesTable from './ReleasesTable';
 import data from '../public/static/releases-table-data.json';
+import { DarkLightContainer } from '@/utils/darkLightContainer';
+import { useTheme } from '@mui/material/styles';
 
 const DownloadsComponent: React.FC = () => {
     const [originalData, setOriginalData] = useState<FilteredRelease[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [arch, setArch] = React.useState<string>('x86_64');
-    const [os, setOs] = React.useState<string>('linux'); 
-    const [version, setVersion] = React.useState<string>('v7.5');
-
+    const [selectedOptions, setSelectedOptions] = React.useState({
+        arch: 'x86_64',
+        os: 'linux',
+    });
+    
     const theme = useTheme();
 
     const handleArch = (
         event: React.MouseEvent<HTMLElement, MouseEvent>,
         newArch: string | null,
     ) => {
-        if (newArch !== arch) {
-            setArch(newArch || '');
-            } else {
-            setArch('');
-            }
-        };
+        if (newArch !== selectedOptions.arch) {
+            setSelectedOptions(prevOptions => ({
+                ...prevOptions,
+                arch: newArch || ''
+            }));
+        }
+    };
 
     const handleOs = (
         event: React.MouseEvent<HTMLElement, MouseEvent>,
         newOs: string | null,
     ) => {
-        if (newOs !== os) {
-            setOs(newOs || '');
-            } else {
-            setOs('');
-            }
+        if (newOs !== selectedOptions.os) {
+            setSelectedOptions(prevOptions => ({
+                ...prevOptions,
+                os: newOs || ''
+            }));
+        }
     };
+
     const handleVersion = (
         event: React.MouseEvent<HTMLElement, MouseEvent>,
         newVersion: string | null,
     ) => {
         if (newVersion) {
-        setVersion(newVersion);
+        setSelectedOptions(prevOptions => ({
+            ...prevOptions,
+            version: newVersion
+            }));
         }
-    }
+    };
 
     useEffect(() => {
         const fetchAssets = async () => {
@@ -72,20 +81,28 @@ const DownloadsComponent: React.FC = () => {
         return Array.from(unique);
     }, [originalData]);
 
+    
+
     const filteredData = useMemo(() => {
-        // Filter releases based on the selected version
-        const filteredReleases = originalData.filter(release => 
-          version ? release.version.startsWith(version) : true
-        );
       
         // Now, filter assets within those releases based on the selected OS and Arch
-        const releasesWithFilteredAssets = filteredReleases.map(release => {
+        const releasesWithFilteredAssets = originalData.map(release => {
           const filteredAssets = release.assets.filter(asset => {
-            const osMatch = !os || asset.operatingSystem.toLowerCase().includes(os.toLowerCase());
-            const archMatch = !arch || asset.architecture.includes(arch) || 
-                              (arch === 'PPC64' && (asset.architecture.includes('ppc64el') || asset.architecture.includes('ppc64le')));
+            const osMatch = !selectedOptions.os || asset.operatingSystem.toLowerCase().includes(selectedOptions.os.toLowerCase());
+            const archMatch = !selectedOptions.arch || asset.architecture.includes(selectedOptions.arch) || 
+                              (selectedOptions.arch === 'PPC64' && (asset.architecture.includes('ppc64el') || asset.architecture.includes('ppc64le')));
       
             return osMatch && archMatch;
+          })
+          .sort((a, b) => {
+            // Sort by file extension
+            const extA = a.name.split('.').pop();
+            const extB = b.name.split('.').pop();
+            if (extA < extB) return -1;
+            if (extA > extB) return 1;
+      
+            // If extensions are the same, sort by name
+            return a.name.localeCompare(b.name);
           });
       
           // Return the release with the filtered assets
@@ -93,7 +110,7 @@ const DownloadsComponent: React.FC = () => {
         }).filter(release => release.assets.length > 0); // Keep only releases with matching assets
       
         return releasesWithFilteredAssets;
-      }, [arch, os, version, originalData]);
+      }, [selectedOptions.arch, selectedOptions.os, originalData]);
       
 
     const renderContent = () => {
@@ -115,19 +132,20 @@ const DownloadsComponent: React.FC = () => {
                             flexDirection: 'column',
                         },
                     }}>
-                        <OperatingSystems handle={handleOs} defaultOs={os} data={data.operating_systems} />
-                        <Architectures handle={handleArch} defaultArch={arch} data={data.architectures} />
-                        <Version handle={handleVersion} defaultVersion={version} data={uniqueVersions} />
+                        <OperatingSystems handle={handleOs} defaultOs={selectedOptions.os} defaultArch={selectedOptions.arch} data={data.operating_systems} />
+                        <Architectures handle={handleArch} defaultArch={selectedOptions.arch} defaultOs={selectedOptions.os} data={data.architectures} />
                     </Box>
-                    {filteredData.map(release => (
-                        <ReleasesTable key={release.version} release={release} data={data.table_rows} /> // Assuming data.table_headers is correct
-                    ))}
+                        {filteredData.map(release => (
+                                    <ReleasesTable key={release.version} release={release} data={data.table_rows} />
+                                ))
+                        }
                 </>
             );
         }
     };
 
     return (
+        <DarkLightContainer>
         <Box sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -140,6 +158,7 @@ const DownloadsComponent: React.FC = () => {
         }}>
             {renderContent()}
         </Box>
+        </DarkLightContainer>
     );
 };
 

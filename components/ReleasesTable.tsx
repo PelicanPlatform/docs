@@ -1,17 +1,11 @@
 import React from 'react';
 import { 
-    Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Link} 
+    Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Link, Tooltip} 
     from '@mui/material';
-import { FilteredRelease } from '../utils/fetchReleases';
+import InfoIcon from '@mui/icons-material/Info';
+import { ReleasesTableProps } from '../utils/types';
 
-
-
-interface ReleasesTableProps {
-    data: Array<string>;
-    release: FilteredRelease;
-}
-
-  const ReleasesTable: React.FC<ReleasesTableProps> = ({ release , data }) => {
+const ReleasesTable: React.FC<ReleasesTableProps> = ({ release , data }) => {
     return(
         <TableContainer component={Paper} sx={{marginTop:"15px"}}>
         <Table aria-label="simple table">
@@ -29,7 +23,12 @@ interface ReleasesTableProps {
                     <TableCell align='center'>{asset.operatingSystem}</TableCell>
                     <TableCell align='center'>{asset.architecture}</TableCell>
                     <TableCell align='center'>
-                        <Link href={asset.downloadUrl}>{asset.name}</Link>
+                        <Link href={asset.downloadUrl}>
+                                {asset.name}
+                        </Link>
+                        <Tooltip title={asset.packageDescription} placement='right' arrow>
+                            <InfoIcon sx={{fontSize:"20px", marginLeft:"4px"}} />
+                        </Tooltip>
                     </TableCell>
                     </TableRow>
                 ))}

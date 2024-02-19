@@ -1,32 +1,4 @@
-export interface Asset {
-  name: string;
-  browser_download_url: string;
-  id: number;
-}
-
-export interface Release {
-  assets: Asset[];
-  tag_name: string; // To determine the version of the release.
-  name: string;
-}
-
-export type FilteredRelease = {
-  version: string;
-  assets: FilteredAsset[];
-}
-
-export type FilteredAsset = {
-  name: string;
-  downloadUrl: string;
-  id: number;
-  assetVersion: string; // Version of the release this asset belongs to
-  operatingSystem: string;
-  architecture: string;
-}
-
-
-const operatingSystems = ['Darwin', 'Linux', 'Windows'];
-const architectures = ['arm64', 'amd64', 'ppc64le', 'ppc64el', 'x86_64', 'aarch64'];
+import { Release, FilteredRelease, packageType, operatingSystems, architectures } from './types';
 
 async function fetchFilteredReleases(): Promise<FilteredRelease[]> {
   const response = await fetch('https://api.github.com/repos/PelicanPlatform/pelican/releases');
@@ -43,19 +15,27 @@ async function fetchFilteredReleases(): Promise<FilteredRelease[]> {
     const [major, minor] = release.tag_name.replace('v', '').split('.').map(Number);
     const majorVersion = `${major}.${minor}`;
 
-    if (majorVersions.size < 4 && !majorVersions.has(majorVersion)) {
+    if (majorVersions.size < 1 && !majorVersions.has(majorVersion)) {
       majorVersions.add(majorVersion);
 
       filteredReleases.push({
         version: release.tag_name,
-        assets: release.assets.map(asset => ({
-          name: asset.name,
-          downloadUrl: asset.browser_download_url,
-          id: asset.id,
-          assetVersion: release.tag_name,
-          operatingSystem: asset.name.includes('checksums.txt') ? '' : operatingSystems.find(os => asset.name.includes(os)) || 'Linux',
-          architecture: asset.name.includes('checksums.txt') ? '' : architectures.find(arch => asset.name.includes(arch)) || 'unknown',
-        }))
+        assets: release.assets.map(asset => {
+          const packageInfo = asset.name.includes('osdf') ?
+            'osdf' :
+            Object.keys(packageType).find(type => asset.name.endsWith(type)) || undefined;
+
+          return {
+            name: asset.name,
+            downloadUrl: asset.browser_download_url,
+            id: asset.id,
+            assetVersion: release.tag_name,
+            operatingSystem: asset.name.includes('checksums.txt') ? '' : operatingSystems.find(os => asset.name.includes(os)) || 'Linux',
+            architecture: asset.name.includes('checksums.txt') ? '' : architectures.find(arch => asset.name.includes(arch)) || 'unknown',
+            packageInfo: packageInfo,
+            packageDescription: packageInfo ? packageType[packageInfo] : undefined,
+          };
+        })
       });
     }
   }
