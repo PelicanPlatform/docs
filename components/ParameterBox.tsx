@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { ParameterDetail } from "../utils/types";
 import { Box, Paper, Typography, IconButton } from "@mui/material";
 import { Link } from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
 
 export const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ parameter }) => {
 
 	const [hover, setHover] = useState(false);
-
+	const theme = useTheme();
 	const parts = parameter.name.split('.');
 	const groupName = parts.length > 1 ? parts.slice(0, -1).join('.') : null;
 	const parameterName = parts.length > 1 ? parts[parts.length - 1] : parameter.name;
@@ -47,7 +48,11 @@ export const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ paramet
 				<Typography variant="body1" mb={1}>
 				{parameter.description}
 				</Typography>
-				<Box p={1} bgcolor={"#e7e7e7"}>
+				<Box p={1} sx={{
+					backgroundColor: theme.palette.mode === "dark" ? "#2a2a2a" : "#f5f5f5",
+					borderRadius: "0.5em",
+					marginTop: "0.5em"
+				}}>
 					{parameter.components && (
 							<Typography variant="body2">
 								Components: [{parameter.components.join(", ")}]

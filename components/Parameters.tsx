@@ -1,67 +1,128 @@
-import { Box, Typography, Autocomplete, TextField, Divider} from '@mui/material';
+import { Box, Typography, Autocomplete, TextField, Divider, IconButton} from '@mui/material';
 import React, {useState, useMemo} from "react";
 import { ParametersArray, ParameterDetail } from "../utils/types";
 import { ParameterBox } from "./ParameterBox";
+import { ParameterChips } from './ParameterChips';
+import { Link } from "@mui/icons-material";
+import { PaletteMode, ThemeProvider, createTheme } from '@mui/material';
+import { useTheme } from 'next-themes';
+import CssBaseline from '@mui/material/CssBaseline';
 
   const Parameters: React.FC<{ parameters: ParametersArray }> = ({ parameters }) => {
 	const [searchValue, setSearchValue] = useState('');
-  
+	const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
+	const [hover, setHover] = useState(false);
+	const {theme, setTheme} = useTheme()
+
+    const getSystemTheme = () => {
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      };
+
+    // Create a theme instance with the state
+    const materialTheme = React.useMemo(() => {
+        // Determine the effective theme mode: 'light', 'dark', or system's preference
+        const effectiveThemeMode = theme === 'system' ? getSystemTheme() : theme;
+
+        return createTheme({
+            palette: {
+                mode: effectiveThemeMode as PaletteMode,
+            },
+        });
+    }, [theme]);
+
 	const filteredParameters = useMemo(() => {
-	  const searchLower = searchValue.toLowerCase();
-	  return parameters.filter((parameter) => {
-		const parameterName = Object.keys(parameter)[0].toLowerCase();
-		return parameterName.includes(searchLower);
-	  });
-	}, [searchValue, parameters]);
-
-	const groupedParameters = useMemo(() => {
-		const groups: { [key: string]: ParameterDetail[] } = {};
-		filteredParameters.forEach((param) => {
-		  const detail = Object.values(param)[0];
-		  const parent = detail.name.split('.').slice(0, -1).join('.');
-		  const group = parent || '';
-	
-		  if (!groups[group]) {
-			groups[group] = [];
-		  }
-		  groups[group].push(detail);
+		const searchLower = searchValue.toLowerCase();
+		return parameters.filter((parameter) => {
+		  const parameterName = Object.keys(parameter)[0].toLowerCase();
+		  const detail = Object.values(parameter)[0];
+		  // Ensure detail.components is defined and is an array before calling includes.
+		  const isComponentMatch = selectedComponent ? (Array.isArray(detail.components) && detail.components.includes(selectedComponent)) : true;
+		  return parameterName.includes(searchLower) && isComponentMatch;
 		});
-		return groups;
-		}, [filteredParameters]);
-
+	  }, [searchValue, parameters, selectedComponent]);
+  
+	const groupedParameters = useMemo(() => {
+	  const groups: { [key: string]: ParameterDetail[] } = {};
+	  filteredParameters.forEach((param) => {
+		const detail = Object.values(param)[0];
+		const parent = detail.name.split('.').slice(0, -1).join('.');
+		const group = parent || '';
+  
+		if (!groups[group]) {
+		  groups[group] = [];
+		}
+		groups[group].push(detail);
+	  });
+	  return groups;
+	}, [filteredParameters]);
+  
 	return (
-		<Box>
+		<ThemeProvider theme={materialTheme}>
+		<CssBaseline />
+	  	<Box>
 			<Autocomplete
-					disablePortal
-					options={parameters.map((param) => Object.keys(param)[0])}
-					onInputChange={(_, value) => setSearchValue(value)}
-					sx={{marginBottom: 2}}
-					fullWidth={true}
-					renderInput={(params) => (
-							<TextField
-									{...params}
-						label="Search..."
-						value={searchValue}
-						onChange={(event) => setSearchValue(event.target.value)}
-					/>
-				)}
+			disablePortal
+			options={parameters.map((param) => Object.keys(param)[0])}
+			onInputChange={(_, value) => setSearchValue(value)}
+			sx={{ marginBottom: 2 }}
+			fullWidth={true}
+			freeSolo
+			renderInput={(params) => (
+				<TextField
+				{...params}
+				label="Search..."
+				value={searchValue}
+				onChange={(event) => setSearchValue(event.target.value)}
+				/>
+			)}
 			/>
+			<ParameterChips handleClick={(component) => {
+			setSelectedComponent(component);
+			setSearchValue('');
+			}} />
 			{Object.entries(groupedParameters).map(([group, groupParams]) => (
-				<React.Fragment key={group}>
-				<Typography sx={{ marginTop: ".5em" }} variant="h4" gutterBottom>{group}</Typography>
+			<Box 
+				key={group}
+				onMouseEnter={() => setHover(true)}
+				onMouseLeave={() => setHover(false)}
+				onClick={async () => {
+					// Copy link to clipboard
+					const url = new URL(window.location.href);
+					url.hash = group
+					await navigator.clipboard.writeText(url.toString());
+				}}
+				>
+				<Typography 
+					sx={{ 
+						marginTop: ".5em"
+							
+					}} 
+					variant="h4" 
+					gutterBottom 
+					id={group}
+				>
+					{group}
+					{hover && group && group !== "" && (
+						<IconButton size={"small"}>
+							<Link fontSize={"small"}/>
+						</IconButton>
+					)}
+				</Typography>
+				
 				{group && group !== "" && (
-					<Divider sx={{ height: "0.5em", backgroundColor: "#0885ff", width: "100%", borderRadius: "0.5em" }} />
+				<Divider sx={{ height: "0.5em", backgroundColor: "#0885ff", width: "100%", borderRadius: "0.5em" }} />
 				)}
 				{groupParams.map((param, index) => (
-					<ParameterBox key={index} parameter={param} />
+				<ParameterBox key={index} parameter={param} />
 				))}
-				</React.Fragment>
+			</Box>
 			))}
-			{filteredParameters.length === 0 && searchValue ? (
-				<Typography variant="h5">No results found</Typography>
+			{filteredParameters.length === 0 && (searchValue || selectedComponent) ? (
+			<Typography variant="h5">No results found</Typography>
 			) : null}
-    	</Box>
-	  );
-	};
-	
-	export default Parameters;
+	  	</Box>
+	  </ThemeProvider>
+	);
+  };
+  
+  export default Parameters;
