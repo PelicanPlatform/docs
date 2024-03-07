@@ -4,61 +4,41 @@ import { ParametersArray, ParameterDetail } from "../utils/types";
 import { ParameterBox } from "./ParameterBox";
 import { ParameterChips } from './ParameterChips';
 import { Link } from "@mui/icons-material";
-import { PaletteMode, ThemeProvider, createTheme } from '@mui/material';
-import { useTheme } from 'next-themes';
-import CssBaseline from '@mui/material/CssBaseline';
+import { DarkLightContainer } from '@/utils/darkLightContainer';
 
-  const Parameters: React.FC<{ parameters: ParametersArray }> = ({ parameters }) => {
+const Parameters: React.FC<{ parameters: ParametersArray }> = ({ parameters }) => {
 	const [searchValue, setSearchValue] = useState('');
 	const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
 	const [hover, setHover] = useState(false);
-	const {theme, setTheme} = useTheme()
-
-    const getSystemTheme = () => {
-        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      };
-
-    // Create a theme instance with the state
-    const materialTheme = React.useMemo(() => {
-        // Determine the effective theme mode: 'light', 'dark', or system's preference
-        const effectiveThemeMode = theme === 'system' ? getSystemTheme() : theme;
-
-        return createTheme({
-            palette: {
-                mode: effectiveThemeMode as PaletteMode,
-            },
-        });
-    }, [theme]);
 
 	const filteredParameters = useMemo(() => {
 		const searchLower = searchValue.toLowerCase();
 		return parameters.filter((parameter) => {
-		  const parameterName = Object.keys(parameter)[0].toLowerCase();
-		  const detail = Object.values(parameter)[0];
-		  // Ensure detail.components is defined and is an array before calling includes.
-		  const isComponentMatch = selectedComponent ? (Array.isArray(detail.components) && detail.components.includes(selectedComponent)) : true;
-		  return parameterName.includes(searchLower) && isComponentMatch;
+			const parameterName = Object.keys(parameter)[0].toLowerCase();
+			const detail = Object.values(parameter)[0];
+
+			// Ensure detail.components is defined and is an array before calling includes.
+			const isComponentMatch = selectedComponent ? (Array.isArray(detail.components) && detail.components.includes(selectedComponent)) : true;
+			return parameterName.includes(searchLower) && isComponentMatch;
 		});
-	  }, [searchValue, parameters, selectedComponent]);
+	}, [searchValue, parameters, selectedComponent]);
   
 	const groupedParameters = useMemo(() => {
-	  const groups: { [key: string]: ParameterDetail[] } = {};
-	  filteredParameters.forEach((param) => {
-		const detail = Object.values(param)[0];
-		const parent = detail.name.split('.').slice(0, -1).join('.');
-		const group = parent || '';
+	  	const groups: { [key: string]: ParameterDetail[] } = {};
+	  	filteredParameters.forEach((param) => {
+			const detail = Object.values(param)[0];
+			const parent = detail.name.split('.').slice(0, -1).join('.');
+			const group = parent || '';
   
-		if (!groups[group]) {
-		  groups[group] = [];
-		}
-		groups[group].push(detail);
-	  });
-	  return groups;
+			if (!groups[group]) {
+			groups[group] = [];
+			}
+			groups[group].push(detail);
+		});
+	  	return groups;
 	}, [filteredParameters]);
-  
 	return (
-		<ThemeProvider theme={materialTheme}>
-		<CssBaseline />
+		<DarkLightContainer>
 	  	<Box>
 			<Autocomplete
 			disablePortal
@@ -121,7 +101,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 			<Typography variant="h5">No results found</Typography>
 			) : null}
 	  	</Box>
-	  </ThemeProvider>
+		</DarkLightContainer>
 	);
   };
   

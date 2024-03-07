@@ -1,29 +1,37 @@
-import React, {useState} from "react";
+import React, { use, useEffect, useState } from "react";
 import { PaletteMode, ThemeProvider, createTheme } from '@mui/material';
 import { useTheme } from 'next-themes';
 import CssBaseline from '@mui/material/CssBaseline';
 
 export const DarkLightContainer = ({ children }) => {
-    const {theme, setTheme} = useTheme()
+    const { resolvedTheme } = useTheme();
+    const [theme, setTheme] = useState('dark');
+    useEffect(() => {
+        let mounted = true;
+        if (resolvedTheme === 'system') {
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                setTheme('dark');
+            }
+            else {
+                setTheme('light');
+            }
+        } else {
+            setTheme(resolvedTheme);
+        }
 
-    const getSystemTheme = () => {
-        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      };
+        return () => {
+            mounted = false;
+        };
+    }, [resolvedTheme]);
 
-    // Create a theme instance with the state
-    const materialTheme = React.useMemo(() => {
-        // Determine the effective theme mode: 'light', 'dark', or system's preference
-        const effectiveThemeMode = theme === 'system' ? getSystemTheme() : theme;
-
-        return createTheme({
-            palette: {
-                mode: effectiveThemeMode as PaletteMode,
-            },
-        });
-    }, [theme]);
+    const muiTheme = createTheme({
+        palette: {
+            mode: theme as PaletteMode,
+        }
+    });
 
     return (
-        <ThemeProvider theme={materialTheme}>
+        <ThemeProvider theme={muiTheme}>
             <CssBaseline />
             {children}
         </ThemeProvider>
