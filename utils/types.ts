@@ -25,6 +25,7 @@ id: number;
 }
 
 export interface Release {
+prerelease: boolean;
 assets: Asset[];
 tag_name: string; // To determine the version of the release.
 name: string;
@@ -33,6 +34,7 @@ name: string;
 export type FilteredRelease = {
 version: string;
 assets: FilteredAsset[];
+prerelease: boolean;
 }
 
 export type FilteredAsset = {

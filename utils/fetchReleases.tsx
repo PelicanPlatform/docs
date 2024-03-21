@@ -12,6 +12,11 @@ async function fetchFilteredReleases(): Promise<FilteredRelease[]> {
   let filteredReleases: FilteredRelease[] = [];
 
   for (const release of sortedReleases) {
+    // Ignore the release if it's a prerelease
+    if (release.prerelease) {
+      continue;
+    }
+
     const [major, minor] = release.tag_name.replace('v', '').split('.').map(Number);
     const majorVersion = `${major}.${minor}`;
 
@@ -20,6 +25,7 @@ async function fetchFilteredReleases(): Promise<FilteredRelease[]> {
 
       filteredReleases.push({
         version: release.tag_name,
+        prerelease: release.prerelease,
         assets: release.assets.map(asset => {
           const packageInfo = asset.name.includes('osdf') ?
             'osdf' :
