@@ -86,3 +86,5 @@ export const compatibilityRules = {
     "windows": ["x86_64"],
     "linux": ["arm64", "amd64", "ppc64", "x86_64", "aarch64"]
 };
+
+export const parameterGroups = ["origin", "nsregistry", "director", "client"];
