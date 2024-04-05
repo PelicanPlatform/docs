@@ -3,6 +3,7 @@ import { ParameterDetail } from "../utils/types";
 import { Box, Paper, Typography, IconButton } from "@mui/material";
 import { Link } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
+import MarkdownRender from "./MarkdownRender";
 
 export const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ parameter }) => {
 
@@ -45,9 +46,9 @@ export const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ paramet
 							</Typography>
 					)}
 				</Box>
-				<Typography variant="body1" mb={1}>
-				{parameter.description}
-				</Typography>
+				<Box>
+					<MarkdownRender content={parameter.description} />
+				</Box>
 				<Box p={1} sx={{
 					borderRadius: "0.5em",
 					marginTop: "0.5em",
