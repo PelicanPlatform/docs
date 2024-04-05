@@ -67,6 +67,17 @@ export interface Parameter {
   
 export type ParametersArray = Parameter[];
 
+export interface CodeBlockProps {
+  node: any;
+  inline?: boolean;
+  className?: string;
+  children: React.ReactNode;
+}
+
+export interface PreProps {
+  children: React.ReactNode;
+}
+
 export const operatingSystems = ['Darwin', 'Linux', 'Windows'];
 
 export const architectures = ['arm64', 'amd64', 'ppc64le', 'ppc64el', 'x86_64', 'aarch64'];
