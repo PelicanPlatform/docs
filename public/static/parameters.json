@@ -1,11 +1,11 @@
 [
 	{
-		"ThisIsATestConfig": {
+		"Debug": {
 			"components": [
 				"*"
 			],
 			"default": false,
-			"description": "A bool indicating whether Pelican should emit debug messages in its log.",
+			"description": "A bool indicating whether Pelican should emit debug messages in its log. NOTE: this will override whatever is set within your configuration file under Logging.Level!",
 			"name": "Debug",
 			"type": "bool"
 		}
@@ -14,7 +14,7 @@
 		"TLSSkipVerify": {
 			"components": [
 				"origin",
-				"nsregistry",
+				"registry",
 				"director"
 			],
 			"default": false,
@@ -27,11 +27,11 @@
 		"IssuerKey": {
 			"components": [
 				"client",
-				"nsregistry",
+				"registry",
 				"director"
 			],
 			"default": "$ConfigBase/issuer.jwk",
-			"description": "The name of the file containing a service's private `issuer.jwk` key.",
+			"description": "A filepath to the file containing a PEM-encoded ecdsa private key which later will be parsed into a JWK and serves as the private key to sign various JWTs issued by this server\nA public JWK will be derived from this private key and used as the key for token verification",
 			"name": "IssuerKey",
 			"root_default": "/etc/pelican/issuer.jwk",
 			"type": "filename"
@@ -41,7 +41,7 @@
 		"Transport.DialerTimeout": {
 			"components": [
 				"client",
-				"nsregistry",
+				"registry",
 				"origin"
 			],
 			"default": "10s",
@@ -54,7 +54,7 @@
 		"Transport.DialerKeepAlive": {
 			"components": [
 				"client",
-				"nsregistry",
+				"registry",
 				"origin"
 			],
 			"default": "30s",
@@ -67,7 +67,7 @@
 		"Transport.MaxIdleConns": {
 			"components": [
 				"client",
-				"nsregistry",
+				"registry",
 				"origin"
 			],
 			"default": 30,
@@ -80,7 +80,7 @@
 		"Transport.IdleConnTimeout": {
 			"components": [
 				"client",
-				"nsregistry",
+				"registry",
 				"origin"
 			],
 			"default": "90s",
@@ -93,7 +93,7 @@
 		"Transport.TLSHandshakeTimeout": {
 			"components": [
 				"client",
-				"nsregistry",
+				"registry",
 				"origin"
 			],
 			"default": "15s",
@@ -106,7 +106,7 @@
 		"Transport.ExpectContinueTimeout": {
 			"components": [
 				"client",
-				"nsregistry",
+				"registry",
 				"origin"
 			],
 			"default": "1s",
@@ -119,13 +119,24 @@
 		"Transport.ResponseHeaderTimeout": {
 			"components": [
 				"client",
-				"nsregistry",
+				"registry",
 				"origin"
 			],
 			"default": "10s",
 			"description": "Maximum time the client should wait for the response headers to be received from the server",
 			"name": "Transport.ResponseHeaderTimeout",
 			"type": "duration"
+		}
+	},
+	{
+		"GeoIPOverrides": {
+			"components": [
+				"director"
+			],
+			"default": "none",
+			"description": "A list of IP addresses whose GeoIP resolution should be overridden with the supplied Lat/Long coordinates (in decimal form). This affects both server ads (for determining the location of origins and caches) and incoming client requests (for determing where a client request is coming from).\nConfiguration takes an IP address (both regular and CIDR) and a Coordinate made up of a lat/long pair in decimal format. For example: ``` GeoIPOverrides:\n  - IP: \"123.234.123.234\"\n    Coordinate:\n      Lat: 43.073904\n      Long: -89.384859\n  - IP: \"ABCD::1234/112\"\n    Coordinate:\n      Lat: 39.8281\n      Long: -98.5795\n```\nwill result in the IP address \"123.234.123.234\" being mapped to Madison, WI, and IP addresses in the range ABCD::0000-FFFF will be mapped to a field in Kansas.",
+			"name": "GeoIPOverrides",
+			"type": "object"
 		}
 	},
 	{
@@ -140,25 +151,145 @@
 		}
 	},
 	{
+		"Logging.LogLocation": {
+			"components": [
+				"*"
+			],
+			"default": "none",
+			"description": "A filename defining a file to write log outputs to, if the user desires.",
+			"name": "Logging.LogLocation",
+			"type": "filename"
+		}
+	},
+	{
+		"Logging.DisableProgressBars": {
+			"components": [
+				"Client"
+			],
+			"default": false,
+			"description": "A bool defining if progress bars should be enabled or not.",
+			"name": "Logging.DisableProgressBars",
+			"type": "bool"
+		}
+	},
+	{
+		"Logging.Origin.Cms": {
+			"components": [
+				"origin"
+			],
+			"default": "error",
+			"description": "Trace level of Xrootd cluster management service, one of the main xrootd executables. Cms basically is a file (or asset) discovery service. Each server has a cmsd daemon which connect to a master one informing it if a server is available. Xrootd asks cms where a file could be found and cms works to report back the server for where the file is located.",
+			"name": "Logging.Origin.Cms",
+			"type": "string"
+		}
+	},
+	{
+		"Logging.Origin.Scitokens": {
+			"components": [
+				"origin"
+			],
+			"default": "error",
+			"description": "Trace level of scitokens debug output within Xrootd configuration. This entails token management and security credentials within Xrootd.",
+			"name": "Logging.Origin.Scitokens",
+			"type": "string"
+		}
+	},
+	{
+		"Logging.Origin.Xrd": {
+			"components": [
+				"origin"
+			],
+			"default": "error",
+			"description": "Trace level of the eXtended Request Daemon within Xrootd, another main xrootd executable. This reports information the xrootd protocol and works with cms.",
+			"name": "Logging.Origin.Xrd",
+			"type": "string"
+		}
+	},
+	{
+		"Logging.Origin.Xrootd": {
+			"components": [
+				"origin"
+			],
+			"default": "info",
+			"description": "Trace options for Xrootd debug output within Xrootd configuration. This prefix is reserved for the xroot protocol, which is the component that sits on sockets and talks to clients as they query file-system info, open files, and read data. This is the protocol for xrootd (like http) and handles connections and requests.",
+			"name": "Logging.Origin.Xrootd",
+			"type": "string"
+		}
+	},
+	{
+		"Logging.Cache.Ofs": {
+			"components": [
+				"cache"
+			],
+			"default": "error",
+			"description": "Trace level of Xrootd's Open File System. This component cares about files and directories from the administrative perspective. This component is build on top of the Open Storage System component, which deals with things like file creation and reads and writes for files and directories.",
+			"name": "Logging.Cache.Ofs",
+			"type": "string"
+		}
+	},
+	{
+		"Logging.Cache.Pfc": {
+			"components": [
+				"cache"
+			],
+			"default": "info",
+			"description": "Trace level of Xrootd Proxy File Cache (XCache), the caching mechanism used by Xrootd. This component entails information for caches/caching within Xrootd. This component instantiates its own Open Storage System (OSS) to write local files to.",
+			"name": "Logging.Cache.Pfc",
+			"type": "string"
+		}
+	},
+	{
+		"Logging.Cache.Pss": {
+			"components": [
+				"cache"
+			],
+			"default": "error",
+			"description": "Trace level of Xrootd Proxy System Service. Variables this component reports include: number of remotes file opens, number of opens that failed, number of remote file closes, and number of closes that failed.",
+			"name": "Logging.Cache.Pss",
+			"type": "string"
+		}
+	},
+	{
+		"Logging.Cache.Scitokens": {
+			"components": [
+				"cache"
+			],
+			"default": "error",
+			"description": "Trace level of scitokens debug output within Xrootd configuration. This entails token management and security credentials within Xrootd.",
+			"name": "Logging.Cache.Scitokens",
+			"type": "string"
+		}
+	},
+	{
+		"Logging.Cache.Xrd": {
+			"components": [
+				"cache"
+			],
+			"default": "error",
+			"description": "Trace level of the eXtended Request Daemon within Xrootd, another main xrootd executable. This reports information the xrootd protocol and works with cms.",
+			"name": "Logging.Cache.Xrd",
+			"type": "string"
+		}
+	},
+	{
+		"Logging.Cache.Xrootd": {
+			"components": [
+				"cache"
+			],
+			"default": "error",
+			"description": "Trace options for Xrootd debug output within Xrootd configuration. This prefix is reserved for the xroot protocol, which is the component that sits on sockets and talks to clients as they query file-system info, open files, and read data. This is the protocol for xrootd (like http) and handles connections and requests",
+			"name": "Logging.Cache.Xrootd",
+			"type": "string"
+		}
+	},
+	{
 		"Federation.DiscoveryUrl": {
 			"components": [
 				"*"
 			],
 			"default": "none",
-			"description": "A URL pointing to the federation's metadata discovery host.",
+			"description": "A URL pointing to the federation's metadata discovery host. NOTE: this does not work if the url contains a path!",
 			"name": "Federation.DiscoveryUrl",
-			"type": "url"
-		}
-	},
-	{
-		"Federation.TopologyNamespaceUrl": {
-			"components": [
-				"director"
-			],
-			"default": "none",
-			"description": "A URL containing namespace information for origins and caches configured via the OSG Topology application (a legacy integration). The URL should point to the hosted namespace.json.",
-			"name": "Federation.TopologyNamespaceUrl",
-			"osdf_default": "https://topology.opensciencegrid.org/stashcache/namespaces.json",
 			"type": "url"
 		}
 	},
@@ -166,25 +297,27 @@
 		"Federation.DirectorUrl": {
 			"components": [
 				"client",
-				"origin"
+				"origin",
+				"cache"
 			],
 			"default": "none",
 			"description": "A URL indicating where a director service is hosted.",
 			"name": "Federation.DirectorUrl",
-			"osdf_default": "Default is determined dynamically through metadata at \u003cfederation URL\u003e/.well-known/pelican-configuration",
+			"osdf_default": "Default is determined dynamically through metadata at \u003cFederation.DiscoveryUrl\u003e/.well-known/pelican-configuration",
 			"type": "url"
 		}
 	},
 	{
-		"Federation.NamespaceUrl": {
+		"Federation.RegistryUrl": {
 			"components": [
 				"client",
 				"director",
-				"origin"
+				"origin",
+				"cache"
 			],
 			"default": "none",
 			"description": "A URL indicating where the namespace registry service is hosted.",
-			"name": "Federation.NamespaceUrl",
+			"name": "Federation.RegistryUrl",
 			"osdf_default": "Default is determined dynamically through metadata at \u003cfederation URL\u003e/.well-known/pelican-configuration",
 			"type": "url"
 		}
@@ -192,13 +325,62 @@
 	{
 		"Federation.JwkUrl": {
 			"components": [
-				"client",
-				"origin"
+				"*"
 			],
 			"default": "none",
 			"description": "A URL indicating where the JWKS for the Federation is hosted.",
 			"name": "Federation.JwkUrl",
-			"osdf_default": "Default is determined dynamically through metadata at \u003cfedertion URL\u003e/.well-known/pelican-configuration",
+			"osdf_default": "Default is determined dynamically through metadata at \u003cFederation.DiscoveryUrl\u003e/.well-known/pelican-configuration",
+			"type": "url"
+		}
+	},
+	{
+		"Federation.TopologyUrl": {
+			"components": [
+				"origin",
+				"cache"
+			],
+			"default": "none",
+			"description": "A URL for the top level OSG Topology location (a legacy integration). This URL is needed to retrieve authorization file information.",
+			"name": "Federation.TopologyUrl",
+			"osdf_default": "https://topology.opensciencegrid.org",
+			"type": "url"
+		}
+	},
+	{
+		"Federation.TopologyNamespaceUrl": {
+			"components": [
+				"director",
+				"registry"
+			],
+			"default": "none",
+			"description": "A URL containing namespace information for origins and caches configured via the OSG Topology application (a legacy integration). The URL should point to the hosted namespace.json.",
+			"name": "Federation.TopologyNamespaceUrl",
+			"osdf_default": "https://topology.opensciencegrid.org/osdf/namespaces",
+			"type": "url"
+		}
+	},
+	{
+		"Federation.TopologyReloadInterval": {
+			"components": [
+				"director",
+				"registry"
+			],
+			"default": "none",
+			"description": "The frequency, in minutes, that topology should be reloaded.",
+			"name": "Federation.TopologyReloadInterval",
+			"osdf_default": "10m",
+			"type": "duration"
+		}
+	},
+	{
+		"Federation.BrokerUrl": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "The URL of the broker endpoint used by the origin.\nIf left unset, it will be populated by the federation metadata discovery.",
+			"name": "Federation.BrokerUrl",
 			"type": "url"
 		}
 	},
@@ -244,6 +426,17 @@
 			"description": "A bool indicating whether the client's HTTP proxy should be disabled.",
 			"name": "Client.DisableHttpProxy",
 			"type": "bool"
+		}
+	},
+	{
+		"Client.WorkerCount": {
+			"components": [
+				"client"
+			],
+			"default": 5,
+			"description": "An integer indicating the number of file transfer tasks that should be executed in parallel",
+			"name": "Client.WorkerCount",
+			"type": "int"
 		}
 	},
 	{
@@ -302,14 +495,147 @@
 		}
 	},
 	{
+		"Client.MaximumDownloadSpeed": {
+			"components": [
+				"client"
+			],
+			"default": 0,
+			"description": "The maximum speed allowed for a client to download a given file (enforced via rate limits). This is not intended for use by production clients but rather for unit tests; 0 disables the rate limit",
+			"hidden": true,
+			"name": "Client.MaximumDownloadSpeed",
+			"type": "int"
+		}
+	},
+	{
 		"Origin.Url": {
 			"components": [
 				"origin"
 			],
-			"default": "Hostname",
-			"description": "The origin's configured URL, as reported to XRootD.",
+			"default": "https://${Server.Hostname}:${Origin.Port}",
+			"description": "The origin's configured URL, as reported to XRootD. This is the file transfer endpoint for the origin.",
 			"name": "Origin.Url",
+			"type": "url"
+		}
+	},
+	{
+		"Origin.Port": {
+			"components": [
+				"origin"
+			],
+			"default": 8443,
+			"description": "The TCP port to be used by the origin service for serving files.  If set to 0, then a random open port will be used.",
+			"name": "Origin.Port",
+			"type": "int"
+		}
+	},
+	{
+		"Origin.Exports": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "A list describing the origin's exports. Each item in the list describes a single namespace the origin exports:\n\n  - StoragePrefix: \u003cthe relevant path from the object store, eg for posix /my/dir\u003e\n    FederationPrefix: \u003cthe namespace prefix that data from StoragePrefix is made available under within the federation\u003e\n    Capabilities: A list of the capabilities the origin is willing to support for the given export. Capabilities include:\n      [\"Reads\", \"PublicReads\", \"Writes\", \"Listings\", \"DirectReads\"]\n    where each of these has the same effect as the corresponding \"Origin.Enable*\" configuration, except scoped to the\n    given export. If \"PublicReads\" is included, \"Reads\" is inferred.",
+			"name": "Origin.Exports",
+			"type": "object"
+		}
+	},
+	{
+		"Origin.StorageType": {
+			"components": [
+				"origin"
+			],
+			"default": "posix",
+			"description": "The type of storage underpinning the origin. Currently supported types are \"posix\" and \"s3\".",
+			"name": "Origin.StorageType",
 			"type": "string"
+		}
+	},
+	{
+		"Origin.FederationPrefix": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "The namespace prefix of the origin's contents within the federation.\nNOTE: This config option is incompatible with multiple exports defined via `Origin.Exports` and requires that the origin exports only a single path.",
+			"name": "Origin.FederationPrefix",
+			"type": "string"
+		}
+	},
+	{
+		"Origin.StoragePrefix": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "A string indicating the path to the volume exported by an origin's underlying storage. For example, if the origin is configured in posix mode, this constitutes the path on disk exported by the origin for the federation.\nNOTE: This config option is incompatible with multiple exports defined via `Origin.Exports` and requires that the origin exports only a single path.",
+			"name": "Origin.StoragePrefix",
+			"type": "string"
+		}
+	},
+	{
+		"Origin.ExportVolumes": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "A list of docker-style export volumes for the origin. Each item in the list describes a single volume the origin exports. This configuration is meant mostly to be used by passing the -v flag from the command line. Paths exported with this configuration will inherit the origin's abilities, so individual export configurations are not possible.",
+			"name": "Origin.ExportVolumes",
+			"type": "stringSlice"
+		}
+	},
+	{
+		"Origin.EnablePublicReads": {
+			"components": [
+				"origin"
+			],
+			"default": false,
+			"description": "A boolean indicating whether the origin permits reads without valid authorization. When false, reads from the origin will require a properly-scoped authorization token signed by the origin's issuer.\nNOTE: This config option is incompatible with multiple exports defined via `Origin.Exports` and requires that the origin exports only a single path.",
+			"name": "Origin.EnablePublicReads",
+			"type": "bool"
+		}
+	},
+	{
+		"Origin.EnableReads": {
+			"components": [
+				"origin"
+			],
+			"default": true,
+			"description": "A boolean indicating whether the origin permits any reads. When false, the origin may still allow writes.\nNOTE: This config option is incompatible with multiple exports defined via `Origin.Exports` and requires that the origin exports only a single path.",
+			"name": "Origin.EnableReads",
+			"type": "bool"
+		}
+	},
+	{
+		"Origin.EnableWrites": {
+			"components": [
+				"origin"
+			],
+			"default": true,
+			"description": "A boolean indicating whether the origin permits writes. All writes require authorization.\nNOTE: This config option is incompatible with multiple exports defined via `Origin.Exports` and requires that the origin exports only a single path.type: bool",
+			"name": "Origin.EnableWrites",
+			"type": "bool"
+		}
+	},
+	{
+		"Origin.EnableListings": {
+			"components": [
+				"origin"
+			],
+			"default": true,
+			"description": "A boolean indicating whether the origin permits object listings. When true, clients can list the contents of the origin.\nNOTE: This config option is incompatible with multiple exports defined via `Origin.Exports` and requires that the origin exports only a single path.",
+			"name": "Origin.EnableListings",
+			"type": "bool"
+		}
+	},
+	{
+		"Origin.EnableDirectReads": {
+			"components": [
+				"origin"
+			],
+			"default": true,
+			"description": "A boolean indicating whether the origin permits direct reads. When true, the origin indicates that it is willing to interact directly with clients. When false, the origin is indicating it is only willing to interact with clients via a cache service.\nNOTE: This config option is incompatible with multiple exports defined via `Origin.Exports` and requires that the origin exports only a single path.",
+			"name": "Origin.EnableDirectReads",
+			"type": "bool"
 		}
 	},
 	{
@@ -318,9 +644,23 @@
 				"origin"
 			],
 			"default": "none",
-			"description": "A path to the volume exported by an origin.",
+			"deprecated": true,
+			"description": "[Deprecated] Origin.ExportVolume is being deprecated and will be removed in a future release. It is replaced by Origin.ExportVolumes. A path to the volume exported by an origin.",
 			"name": "Origin.ExportVolume",
+			"replacedby": "Origin.ExportVolumes",
 			"type": "string"
+		}
+	},
+	{
+		"Origin.RunLocation": {
+			"components": [
+				"origin"
+			],
+			"default": "$XDG_RUNTIME_DIR/pelican/origin",
+			"description": "A directory where temporary configurations will be stored for the xrootd daemon started by the origin.\nFor non-root servers, if $XDG_RUNTIME_DIR is not set, a temporary directory will be created (and removed on shutdown)",
+			"name": "Origin.RunLocation",
+			"root_default": "/run/pelican/xrootd/origin",
+			"type": "filename"
 		}
 	},
 	{
@@ -329,9 +669,37 @@
 				"origin"
 			],
 			"default": "none",
-			"description": "The filepath prefix at which an origin's contents are made globally available, eg /pelican/PUBLIC.",
+			"deprecated": true,
+			"description": "[Deprecated] Origin.NamespacePrefix is being deprecated and will be removed in a future release. It's configuration is being replaced by either Origin.Exports.FederationPrefix or by Origin.FederationPrefix. Note that Origin.FederationPrefix is incompatible with multiple exports and requires that the origin exports only a single path.\nThe filepath prefix at which an origin's contents are made globally available, eg /pelican/PUBLIC.",
 			"name": "Origin.NamespacePrefix",
+			"replacedby": "Origin.FederationPrefix",
 			"type": "string"
+		}
+	},
+	{
+		"Origin.EnableWrite": {
+			"components": [
+				"origin"
+			],
+			"default": true,
+			"deprecated": true,
+			"description": "[Deprecated] Origin.EnableWrite is being deprecated and will be removed in a future release. It is replaced by Origin.EnableWrites.\nA boolean indicating if an origin allows write access",
+			"name": "Origin.EnableWrite",
+			"replacedby": "Origin.EnableWrites",
+			"type": "bool"
+		}
+	},
+	{
+		"Origin.EnableFallbackRead": {
+			"components": [
+				"origin"
+			],
+			"default": false,
+			"deprecated": true,
+			"description": "[Deprecated] Origin.EnableFallbackRead is being deprecated and will be removed in a future release. It is replaced by Origin.EnableDirectReads.\nSet to `true` if the origin permits clients to directly read from it when no cache service is available",
+			"name": "Origin.EnableFallbackRead",
+			"replacedby": "Origin.EnableDirectReads",
+			"type": "bool"
 		}
 	},
 	{
@@ -358,17 +726,6 @@
 		}
 	},
 	{
-		"Origin.UIPasswordFile": {
-			"components": [
-				"origin"
-			],
-			"default": "$ConfigBase/origin-ui-passwd",
-			"description": "A filepath specifying where the Origin UI password file should be stored.",
-			"name": "Origin.UIPasswordFile",
-			"type": "string"
-		}
-	},
-	{
 		"Origin.SelfTest": {
 			"components": [
 				"origin"
@@ -376,6 +733,39 @@
 			"default": true,
 			"description": "A bool indicating whether the origin should perform self health checks.",
 			"name": "Origin.SelfTest",
+			"type": "bool"
+		}
+	},
+	{
+		"Origin.SelfTestInterval": {
+			"components": [
+				"origin"
+			],
+			"default": "15s",
+			"description": "The interval of which the origin starts a new file transfer test to itself.",
+			"name": "Origin.SelfTestInterval",
+			"type": "duration"
+		}
+	},
+	{
+		"Origin.EnableUI": {
+			"components": [
+				"origin"
+			],
+			"default": true,
+			"description": "Indicate whether the origin should enable its web UI.",
+			"name": "Origin.EnableUI",
+			"type": "bool"
+		}
+	},
+	{
+		"Origin.EnableBroker": {
+			"components": [
+				"origin"
+			],
+			"default": false,
+			"description": "Indicate whether the origin should utilize the broker service to avoid the need for incoming connections.",
+			"name": "Origin.EnableBroker",
 			"type": "bool"
 		}
 	},
@@ -391,6 +781,376 @@
 		}
 	},
 	{
+		"Origin.ScitokensRestrictedPaths": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "Enable the built-in issuer daemon for the origin.",
+			"name": "Origin.ScitokensRestrictedPaths",
+			"type": "stringSlice"
+		}
+	},
+	{
+		"Origin.ScitokensMapSubject": {
+			"components": [
+				"origin"
+			],
+			"default": false,
+			"description": "Enable the built-in issuer daemon for the origin.",
+			"name": "Origin.ScitokensMapSubject",
+			"type": "bool"
+		}
+	},
+	{
+		"Origin.ScitokensDefaultUser": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "Enable the built-in issuer daemon for the origin.",
+			"name": "Origin.ScitokensDefaultUser",
+			"type": "string"
+		}
+	},
+	{
+		"Origin.ScitokensUsernameClaim": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "Enable the built-in issuer daemon for the origin.",
+			"name": "Origin.ScitokensUsernameClaim",
+			"type": "string"
+		}
+	},
+	{
+		"Origin.ScitokensNameMapFile": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "Enable the built-in issuer daemon for the origin.",
+			"name": "Origin.ScitokensNameMapFile",
+			"type": "string"
+		}
+	},
+	{
+		"Origin.XRootDPrefix": {
+			"components": [
+				"origin"
+			],
+			"default": "origin",
+			"description": "The directory prefix for the xrootd origin configuration files.",
+			"name": "Origin.XRootDPrefix",
+			"type": "string"
+		}
+	},
+	{
+		"Origin.EnableVoms": {
+			"components": [
+				"origin"
+			],
+			"default": true,
+			"description": "Enable X.509 / VOMS-based authentication.  This allows HTTP clients to present X.509 client credentials in order to authenticate.  The configuration of the authorization for these clients must be done by the admin; Pelican does not support automatic VOMS authorization configuration.",
+			"name": "Origin.EnableVoms",
+			"type": "bool"
+		}
+	},
+	{
+		"Origin.EnableDirListing": {
+			"components": [
+				"origin"
+			],
+			"default": false,
+			"deprecated": true,
+			"description": "[Deprecated] Origin.EnableDirListing is being deprecated and will be removed in a future release. It is replaced by Origin.EnableListings.\nAllows the origin to enable directory listings. Needs to be enabled for recursive downloads to work properly and for directories to be visable.",
+			"name": "Origin.EnableDirListing",
+			"replacedby": "Origin.EnableListings",
+			"type": "bool"
+		}
+	},
+	{
+		"Origin.Mode": {
+			"components": [
+				"origin"
+			],
+			"default": "posix",
+			"deprecated": true,
+			"description": "[Deprecated] Origin.Mode is being deprecated and will be removed in a future release. It is replaced by Origin.StorageType.\nThe backend mode to be used by an origin. Current values that can be selected from are either \"posix\" or \"s3\".",
+			"name": "Origin.Mode",
+			"replacedby": "Origin.StorageType",
+			"type": "string"
+		}
+	},
+	{
+		"Origin.S3ServiceName": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "The S3 Service Name to be used by the XRootD plugin.",
+			"name": "Origin.S3ServiceName",
+			"type": "string"
+		}
+	},
+	{
+		"Origin.S3Region": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "The S3 region to be used by the XRootD plugin.",
+			"name": "Origin.S3Region",
+			"type": "string"
+		}
+	},
+	{
+		"Origin.S3Bucket": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "The S3 bucket to be used by the XRootD plugin.",
+			"name": "Origin.S3Bucket",
+			"type": "string"
+		}
+	},
+	{
+		"Origin.S3ServiceUrl": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "The S3 service URL to be used by the XRootD plugin.",
+			"name": "Origin.S3ServiceUrl",
+			"type": "string"
+		}
+	},
+	{
+		"Origin.S3AccessKeyfile": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "A path to a file containing an S3 access keyfile for authenticated buckets when an origin is run in S3 mode.",
+			"name": "Origin.S3AccessKeyfile",
+			"type": "filename"
+		}
+	},
+	{
+		"Origin.S3SecretKeyfile": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "A path to a file containing an S3 secret keyfile for authenticated buckets when an origin is run in S3 mode.",
+			"name": "Origin.S3SecretKeyfile",
+			"type": "filename"
+		}
+	},
+	{
+		"Origin.S3UrlStyle": {
+			"components": [
+				"origin"
+			],
+			"default": "path",
+			"description": "The style of S3 urls used by the service URL host. This can be either \"path\" if objects are fetched at \u003cservice-url\u003e/\u003cbucket\u003e/\u003cobject\u003e or \"virtual\" if objects are fetched at \u003cbucket\u003e.\u003cservice-url\u003e/\u003cobject\u003e",
+			"name": "Origin.S3UrlStyle",
+			"type": "string"
+		}
+	},
+	{
+		"LocalCache.RunLocation": {
+			"components": [
+				"localcache"
+			],
+			"default": "$XDG_RUNTIME_DIR/pelican/localcache",
+			"description": "The directory for the runtime files of the local cache",
+			"name": "LocalCache.RunLocation",
+			"root_default": "/run/pelican/localcache",
+			"type": "filename"
+		}
+	},
+	{
+		"LocalCache.DataLocation": {
+			"components": [
+				"localcache"
+			],
+			"default": "$PELICAN_LOCALCACHE_RUNLOCATION/cache",
+			"description": "The directory for the location of the cache data files - this is where the actual data in the cache is stored for the local cache.",
+			"name": "LocalCache.DataLocation",
+			"type": "filename"
+		}
+	},
+	{
+		"LocalCache.Socket": {
+			"components": [
+				"localcache"
+			],
+			"default": "$PELICAN_LOCALCACHE_RUNLOCATION/cache.sock",
+			"description": "The location of the socket used for client communication for the local cache",
+			"name": "LocalCache.Socket",
+			"type": "filename"
+		}
+	},
+	{
+		"LocalCache.Size": {
+			"components": [
+				"localcache"
+			],
+			"default": 0,
+			"description": "The maximum size of the local cache.  If not set, it is assumed the entire device can be used. This parameter can be provided with units (e.g., 20GB, 150MB); if no unit is provided, then it is assumed to be in bytes.",
+			"name": "LocalCache.Size",
+			"type": "string"
+		}
+	},
+	{
+		"LocalCache.HighWaterMarkPercentage": {
+			"components": [
+				"localcache"
+			],
+			"default": 95,
+			"description": "A percentage value where the cache cleanup routines will triggered.  Once the cache usage of completed files hits the high water mark, files will be deleted until the usage hits the low water mark.",
+			"name": "LocalCache.HighWaterMarkPercentage",
+			"type": "int"
+		}
+	},
+	{
+		"LocalCache.LowWaterMarkPercentage": {
+			"components": [
+				"localcache"
+			],
+			"default": 85,
+			"description": "A percentage value where the cache cleanup routines will complete.  Once the cache usage of completed files hits the high water mark, files will be deleted until the usage hits the low water mark.",
+			"name": "LocalCache.LowWaterMarkPercentage",
+			"type": "int"
+		}
+	},
+	{
+		"Cache.DataLocation": {
+			"components": [
+				"cache"
+			],
+			"default": "$XDG_RUNTIME_DIR/pelican/xcache",
+			"description": "The directory for the location of the cache data files - this is where the actual data in the cache is stored. This should *not* be in the same path as XRootD.Mount or else it will expose the data files as part of the files within the cache.",
+			"name": "Cache.DataLocation",
+			"root_default": "/run/pelican/xcache",
+			"type": "string"
+		}
+	},
+	{
+		"Cache.ExportLocation": {
+			"components": [
+				"cache"
+			],
+			"default": "/",
+			"description": "The location of the export directory. Everything under this directory will be exposed as part of the cache. This is relative to the mount location.",
+			"name": "Cache.ExportLocation",
+			"type": "string"
+		}
+	},
+	{
+		"Cache.RunLocation": {
+			"components": [
+				"cache"
+			],
+			"default": "$XDG_RUNTIME_DIR/pelican/cache",
+			"description": "A directory where temporary configurations will be stored for the xrootd daemon started by the cache.\nFor non-root servers, if $XDG_RUNTIME_DIR is not set, a temporary directory will be created (and removed on shutdown)",
+			"name": "Cache.RunLocation",
+			"root_default": "/run/pelican/xrootd/cache",
+			"type": "filename"
+		}
+	},
+	{
+		"Cache.XRootDPrefix": {
+			"components": [
+				"cache"
+			],
+			"default": "cache",
+			"description": "The directory prefix for the xrootd cache configuration files.",
+			"name": "Cache.XRootDPrefix",
+			"type": "string"
+		}
+	},
+	{
+		"Cache.Url": {
+			"components": [
+				"cache"
+			],
+			"default": "https://${Server.Hostname}:${Cache.Port}",
+			"description": "The cache's configured URL, as reported to XRootD. This is the file transfer endpoint for the cache.",
+			"name": "Cache.Url",
+			"type": "url"
+		}
+	},
+	{
+		"Cache.Port": {
+			"components": [
+				"cache"
+			],
+			"default": 8442,
+			"description": "The TCP port the cache service should use.  If set to 0, then a random open port will be used.",
+			"name": "Cache.Port",
+			"type": "int"
+		}
+	},
+	{
+		"Cache.EnableVoms": {
+			"components": [
+				"cache"
+			],
+			"default": false,
+			"description": "Enable X.509 / VOMS-based authentication for the cache.  This allows HTTP clients to present X.509 client credentials in order to authenticate.  The configuration of the authorization for these clients must be done by the admin; Pelican does not support automatic VOMS authorization configuration.",
+			"name": "Cache.EnableVoms",
+			"type": "bool"
+		}
+	},
+	{
+		"Cache.Concurrency": {
+			"components": [
+				"cache"
+			],
+			"default": "none",
+			"description": "This value represents the maximum number of connections to a cache for Xrootd throttling. When this value is set, it enables the xrootd throttling plugin and will set the maximum number of connections to this value.",
+			"name": "Cache.Concurrency",
+			"type": "int"
+		}
+	},
+	{
+		"Cache.PermittedNamespaces": {
+			"components": [
+				"cache"
+			],
+			"default": "none",
+			"description": "A list of namespaces the cache is allowed to pull from. If the list is empty or this option is unset, it's assumed that the cache is allowed to access any namespace that's advertised to the director. Otherwise, it will only be allowed to access the listed namespaces.",
+			"name": "Cache.PermittedNamespaces",
+			"type": "stringSlice"
+		}
+	},
+	{
+		"Cache.SelfTest": {
+			"components": [
+				"cache"
+			],
+			"default": true,
+			"description": "A bool indicating whether the cache should perform self health checks.",
+			"name": "Cache.SelfTest",
+			"type": "bool"
+		}
+	},
+	{
+		"Cache.SelfTestInterval": {
+			"components": [
+				"cache"
+			],
+			"default": "15s",
+			"description": "The interval of which the cache starts a new file transfer test to itself.",
+			"name": "Cache.SelfTestInterval",
+			"type": "duration"
+		}
+	},
+	{
 		"Director.DefaultResponse": {
 			"components": [
 				"director"
@@ -402,6 +1162,28 @@
 		}
 	},
 	{
+		"Director.CacheResponseHostnames": {
+			"components": [
+				"director"
+			],
+			"default": "none",
+			"description": "A list of virtual hostnames for the director. If a request is sent by the client to one of these hostnames, the director assumes it should respond with a redirect to a cache.\nIf present, the hostname is taken from the X-Forwarded-Host header in the request. Otherwise, Host is used.",
+			"name": "Director.CacheResponseHostnames",
+			"type": "stringSlice"
+		}
+	},
+	{
+		"Director.OriginResponseHostnames": {
+			"components": [
+				"director"
+			],
+			"default": "none",
+			"description": "A list of virtual hostnames for the director. If a request is sent by the client to one of these hostnames, the director assumes it should respond with a redirect to an origin.\nIf present, the hostname is taken from the X-Forwarded-Host header in the request. Otherwise, Host is used.",
+			"name": "Director.OriginResponseHostnames",
+			"type": "stringSlice"
+		}
+	},
+	{
 		"Director.MaxMindKeyFile": {
 			"components": [
 				"director"
@@ -409,7 +1191,7 @@
 			"default": "none",
 			"description": "A filepath to a MaxMind API key. The director service uses the MaxMind GeoLite City database (available [here](https://dev.maxmind.com/geoip/docs/databases/city-and-country)) to determine which cache is nearest to a client's IP address. The database, if not already found, will be downloaded automatically when a director is served and a valid key is present.",
 			"name": "Director.MaxMindKeyFile",
-			"type": "url"
+			"type": "filename"
 		}
 	},
 	{
@@ -425,9 +1207,97 @@
 		}
 	},
 	{
+		"Director.MinStatResponse": {
+			"components": [
+				"director"
+			],
+			"default": 1,
+			"description": "A positive integer indicating minimum number of origin's responses required for a `stat` call",
+			"name": "Director.MinStatResponse",
+			"type": "int"
+		}
+	},
+	{
+		"Director.MaxStatResponse": {
+			"components": [
+				"director"
+			],
+			"default": 1,
+			"description": "A positive integer indicating maximum number of origin's responses required for a `stat` call. `stat` call will cancel the rest of the ongoing query if max reponse is hit.",
+			"name": "Director.MaxStatResponse",
+			"type": "int"
+		}
+	},
+	{
+		"Director.StatTimeout": {
+			"components": [
+				"director"
+			],
+			"default": "200ms",
+			"description": "The timeout for a single `stat` request.",
+			"name": "Director.StatTimeout",
+			"type": "duration"
+		}
+	},
+	{
+		"Director.StatConcurrencyLimit": {
+			"components": [
+				"director"
+			],
+			"default": 1000,
+			"description": "The maximum number of concurrent `stat` request to a single origin server. Additional requests are blocked until total requests for the origin is below limit. See [golang.org/x/sync/errgroup](https://pkg.go.dev/golang.org/x/sync@v0.6.0/errgroup#Group.SetLimit) for detail",
+			"name": "Director.StatConcurrencyLimit",
+			"type": "int"
+		}
+	},
+	{
+		"Director.AdvertisementTTL": {
+			"components": [
+				"director"
+			],
+			"default": "15m",
+			"description": "The time to live (TTL) of director's internal cache to store origins and caches advertisement.",
+			"name": "Director.AdvertisementTTL",
+			"type": "duration"
+		}
+	},
+	{
+		"Director.OriginCacheHealthTestInterval": {
+			"components": [
+				"director"
+			],
+			"default": "15s",
+			"description": "The interval of which director issues a new file transfer test to all the registered origins and caches.",
+			"name": "Director.OriginCacheHealthTestInterval",
+			"type": "duration"
+		}
+	},
+	{
+		"Director.EnableBroker": {
+			"components": [
+				"director"
+			],
+			"default": true,
+			"description": "Whether the director should also run the connection brokering service.",
+			"name": "Director.EnableBroker",
+			"type": "bool"
+		}
+	},
+	{
+		"Director.FilteredServers": {
+			"components": [
+				"director"
+			],
+			"default": "none",
+			"description": "A list of server host names to not to redirect client requests to. This is for admins to put a list of servers in the federation into downtime.",
+			"name": "Director.FilteredServers",
+			"type": "stringSlice"
+		}
+	},
+	{
 		"Registry.DbLocation": {
 			"components": [
-				"nsregistry"
+				"registry"
 			],
 			"default": "$ConfigBase/ns-registry.sqlite",
 			"description": "A filepath to the intended location of the namespace registry's database.",
@@ -437,14 +1307,104 @@
 		}
 	},
 	{
+		"Registry.RequireKeyChaining": {
+			"components": [
+				"registry"
+			],
+			"default": true,
+			"description": "Specifies whether namespaces requesting registration must possess a key matching any already-registered super/sub namespaces. For example, if true and a namespace `/foo/bar` is already registered, then registration of `/foo` or `/foo/bar/baz` can only be done using keys registered to `/foo/bar`.",
+			"name": "Registry.RequireKeyChaining",
+			"type": "bool"
+		}
+	},
+	{
+		"Registry.AdminUsers": {
+			"components": [
+				"registry"
+			],
+			"default": [],
+			"description": "A string slice of \"subject\" claim of users to give admin permission for registry UI.\nThe \"subject\" claim should be the \"CILogon User Identifier\" from CILogon user page: https://cilogon.org/",
+			"name": "Registry.AdminUsers",
+			"type": "stringSlice"
+		}
+	},
+	{
+		"Registry.Institutions": {
+			"components": [
+				"registry"
+			],
+			"default": "none",
+			"description": "A array of institution objects available to register. Users can only select from this list when they register a new namespace. Each object has `name` and `id` field where `name` is a human-readable name for the institution and `id` is a unique identifier for the institution. For Pelican running in OSDF alias, the `id` will be OSG ID.\nFor example:\n``` - name: University of Wisconsin - Madison\n  id: https://osg-htc.org/iid/01y2jtd41\n```\nNote that this value will take precedence over Registry.InstitutionsUrl if both are set",
+			"name": "Registry.Institutions",
+			"type": "object"
+		}
+	},
+	{
+		"Registry.CustomRegistrationFields": {
+			"components": [
+				"registry"
+			],
+			"default": "none",
+			"description": "An array of objects specifying **additional** fields when registering namespaces.\nThe schema of the object is as follows: ``` - name: department\n  type: enum\n  required: true\n  options:\n    - name: Math\n      id: math\n    - name: Computer Science\n      id: cs\n  optionsUrl: https://example.com/options\n  validationUrl: https://example.com/validate\n  description: The department of the organization that holds this namespace\n```\nNote the following requirements: - \"name\" must be snake case with underline connecting words, i.e. site_name. - \"type\" must be one of \"string\", \"int\", \"bool\", \"datetime\" (Unix time in seconds), or \"enum\". - \"options\" must be a non-empty yaml array for field with type \"enum\". \"optionsUrl\" will be ignored if \"options\" is set.\n  example:\n\n    ```yaml\n    options:\n      - name: \"Option A\"\n        id: \"optionA\"\n    ```\n- \"description\" will show up in the web UI as helper text to help user understand the field",
+			"name": "Registry.CustomRegistrationFields",
+			"type": "object"
+		}
+	},
+	{
+		"Registry.InstitutionsUrl": {
+			"components": [
+				"registry"
+			],
+			"default": "none",
+			"description": "A url to get a list of available institutions for users to register their namespaces to. The url must accept a GET request with 200 response in JSON/YAML content with the following format:\nJSON: ```JSON\n  [\n    {\n      \"name\": \"University of Wisconsin - Madison\",\n      \"id\": \" https://osg-htc.org/iid/01y2jtd41\"\n    }\n  ]\n```\nYAML: ```yaml\n  ---\n  - name: University of Wisconsin - Madison\n    id: \" https://osg-htc.org/iid/01y2jtd41\"\n```\nwhere the id field will be stored in registry database and must be unique, and name field will be displayed in UI as the option.\nNote that Pelican will cache the response of the url in a TTL cache with default refresh time of 15 minutes. Also note that Registry.Institutions will take precedence over this value if both are set.",
+			"name": "Registry.InstitutionsUrl",
+			"type": "url"
+		}
+	},
+	{
+		"Registry.InstitutionsUrlReloadMinutes": {
+			"components": [
+				"registry"
+			],
+			"default": "15m",
+			"description": "Number of minutes that the Registry.InstitutionsUrl will be reloaded into the TTL cache.",
+			"name": "Registry.InstitutionsUrlReloadMinutes",
+			"type": "duration"
+		}
+	},
+	{
+		"Registry.RequireCacheApproval": {
+			"components": [
+				"registry"
+			],
+			"default": false,
+			"description": "Only allow approved caches to join the federation and serve files. If set to true, caches can successfully self-register or registered via registry, but director won't direct traffic to the cache.",
+			"name": "Registry.RequireCacheApproval",
+			"osdf_default": true,
+			"type": "bool"
+		}
+	},
+	{
+		"Registry.RequireOriginApproval": {
+			"components": [
+				"registry"
+			],
+			"default": false,
+			"description": "Only allow approved origins to join the federation and serve files. If set to true, origins can successfully self-register or registered via registry, but director won't direct traffic to the origin, nor would files on the origin show up in the federation.",
+			"name": "Registry.RequireOriginApproval",
+			"osdf_default": true,
+			"type": "bool"
+		}
+	},
+	{
 		"Server.TLSCertificate": {
 			"components": [
 				"origin",
-				"nsregistry",
+				"registry",
 				"director"
 			],
 			"default": "$ConfigBase/certificates/tls.crt",
-			"description": "The name of a file containing an X.509 host certificate to use for TLS authentication when running server components of Pelican.",
+			"description": "A filepath to a file containing an X.509 host certificate to use for TLS authentication when running server components of Pelican.\nIf you override this filepath, you need to provide the matched-pair private key via Server.TLSKey and a Certificate Authority (CA) certificate via Server.TLSCACertificateFile",
 			"name": "Server.TLSCertificate",
 			"root_default": "/etc/pelican/certificates/tls.crt",
 			"type": "filename"
@@ -453,21 +1413,26 @@
 	{
 		"Server.TLSCACertificateFile": {
 			"components": [
-				"origin"
+				"origin",
+				"registry",
+				"director"
 			],
-			"default": "/etc/pki/tls/cert.pem",
-			"description": "A filepath for a TLS certificate to be used by XRootD.",
+			"default": "$ConfigBase/certificates/tlsca.pem",
+			"description": "A filepath to the TLS Certificate Authority (CA) certificate file, to be used by XRootD and internal HTTP client requests.\nDo not override this filepath unless you want to provide your TLS host certifacte",
 			"name": "Server.TLSCACertificateFile",
-			"type": "string"
+			"root_default": "/etc/pelican/certificates/tlsca.pem",
+			"type": "filename"
 		}
 	},
 	{
 		"Server.TLSCACertificateDirectory": {
 			"components": [
-				"origin"
+				"origin",
+				"registry",
+				"director"
 			],
-			"default": "/etc/pki/tls/cert.pem",
-			"description": "A filepath to the directory used for storing TLS certificates",
+			"default": "none",
+			"description": "A filepath to the directory used for storing TLS Certificate Authority (CA) certificate to be used by XRootD only.\nThis is exclusive with Server.TLSCACertificateFile for XRootD and this value takes priority over Server.TLSCACertificateFile",
 			"name": "Server.TLSCACertificateDirectory",
 			"type": "string"
 		}
@@ -476,7 +1441,7 @@
 		"Server.TLSCAKey": {
 			"components": [
 				"origin",
-				"nsregistry",
+				"registry",
 				"director"
 			],
 			"default": "$ConfigBase/certificates/tlsca.key",
@@ -490,7 +1455,7 @@
 		"Server.TLSKey": {
 			"components": [
 				"origin",
-				"nsregistry",
+				"registry",
 				"director"
 			],
 			"default": "$ConfigBase/certificates/tls.key",
@@ -501,39 +1466,55 @@
 		}
 	},
 	{
-		"Server.Port": {
+		"Server.EnableUI": {
 			"components": [
-				"nsregistry",
+				"origin",
+				"registry",
 				"director",
-				"origin"
+				"cache"
+			],
+			"default": true,
+			"description": "Indicate whether a server should enable its web UI.",
+			"name": "Server.EnableUI",
+			"type": "bool"
+		}
+	},
+	{
+		"Server.WebPort": {
+			"components": [
+				"origin",
+				"director",
+				"registry"
 			],
 			"default": 8444,
-			"description": "The port number the Pelican web interface will be bound to.",
-			"name": "Server.Port",
+			"description": "The port number the Pelican web interface and internal web APIs will be bound to.",
+			"name": "Server.WebPort",
 			"type": "int"
 		}
 	},
 	{
-		"Server.Address": {
+		"Server.WebHost": {
 			"components": [
-				"origin"
+				"origin",
+				"director",
+				"registry"
 			],
 			"default": "0.0.0.0",
-			"description": "A string-encoded IP address that the origin is configured to listen on.",
-			"name": "Server.Address",
+			"description": "A string-encoded IP address that the Pelican web engine is configured to listen on.",
+			"name": "Server.WebHost",
 			"type": "string"
 		}
 	},
 	{
-		"Server.ExternalAddress": {
+		"Server.ExternalWebUrl": {
 			"components": [
 				"origin",
 				"director",
-				"nsregistry"
+				"registry"
 			],
-			"default": "none",
-			"description": "A URL indicating the server's address as it appears externally.",
-			"name": "Server.ExternalAddress",
+			"default": "https://${Server.Hostname}:${Server.WebPort}",
+			"description": "A URL indicating the Pelican web interface and internal web APIs address as it appears externally.",
+			"name": "Server.ExternalWebUrl",
 			"type": "url"
 		}
 	},
@@ -542,12 +1523,51 @@
 			"components": [
 				"origin",
 				"director",
-				"nsregistry"
+				"registry"
 			],
 			"default": "none",
-			"description": "The server's hostname",
+			"description": "The server's hostname, by default it's os.Hostname().",
 			"name": "Server.Hostname",
-			"type": "url"
+			"type": "string"
+		}
+	},
+	{
+		"Server.IssuerUrl": {
+			"components": [
+				"origin",
+				"director",
+				"registry"
+			],
+			"default": "none",
+			"description": "The URL and port at which the server's issuer can be accessed.",
+			"name": "Server.IssuerUrl",
+			"type": "string"
+		}
+	},
+	{
+		"Server.IssuerHostname": {
+			"components": [
+				"origin",
+				"director",
+				"registry"
+			],
+			"default": "none",
+			"description": "The hostname at which the server's issuer can be accessed.",
+			"name": "Server.IssuerHostname",
+			"type": "string"
+		}
+	},
+	{
+		"Server.IssuerPort": {
+			"components": [
+				"origin",
+				"director",
+				"registry"
+			],
+			"default": "none",
+			"description": "The port at which the server's issuer can be accessed.",
+			"name": "Server.IssuerPort",
+			"type": "int"
 		}
 	},
 	{
@@ -555,12 +1575,98 @@
 			"components": [
 				"origin",
 				"director",
-				"nsregistry"
+				"registry"
 			],
 			"default": "none",
 			"description": "A filepath indicating where the server's public JSON web keyset can be found.",
 			"name": "Server.IssuerJwks",
-			"type": "string"
+			"type": "filename"
+		}
+	},
+	{
+		"Server.Modules": {
+			"components": [
+				"*"
+			],
+			"default": [],
+			"description": "A list of modules to enable when running pelican in `pelican serve` mode.",
+			"name": "Server.Modules",
+			"type": "stringSlice"
+		}
+	},
+	{
+		"Server.UIActivationCodeFile": {
+			"components": [
+				"origin",
+				"cache",
+				"registry",
+				"director"
+			],
+			"default": "$ConfigBase/server-web-activation-code",
+			"description": "If the server's web UI has not yet been configured, this file will contain the activation code necessary to turn it on.",
+			"name": "Server.UIActivationCodeFile",
+			"type": "filename"
+		}
+	},
+	{
+		"Server.UIPasswordFile": {
+			"components": [
+				"origin",
+				"cache",
+				"registry",
+				"director"
+			],
+			"default": "$ConfigBase/server-web-passwd",
+			"description": "A filepath specifying where the server's web UI password file should be stored.",
+			"name": "Server.UIPasswordFile",
+			"type": "filename"
+		}
+	},
+	{
+		"Server.SessionSecretFile": {
+			"components": [
+				"registry",
+				"director"
+			],
+			"default": "$ConfigBase/session-secret The default content of the file is the hash of the concatenation of \"pelican\" and the DER form of ${IssuerKey}",
+			"description": "The filepath to the secret for encrypt/decrypt session data for Pelican web UI to initiate a session cookie\nThis is used for sending redirect request for OAuth2 authentication follow. This is also used for CSRF auth key.",
+			"name": "Server.SessionSecretFile",
+			"type": "filename"
+		}
+	},
+	{
+		"Server.RegistrationRetryInterval": {
+			"components": [
+				"origin",
+				"cache"
+			],
+			"default": "10s",
+			"description": "The duration of delay in origin/cache registration retry attempts if the initial registration call to registry was failed.",
+			"name": "Server.RegistrationRetryInterval",
+			"type": "duration"
+		}
+	},
+	{
+		"Server.UILoginRateLimit": {
+			"components": [
+				"*"
+			],
+			"default": 1,
+			"description": "The maximum number of requests a user can be made under the same IP address per second against the login endpoint",
+			"name": "Server.UILoginRateLimit",
+			"type": "int"
+		}
+	},
+	{
+		"Server.WebConfigFile": {
+			"components": [
+				"*"
+			],
+			"default": "$ConfigBase/web-config.yaml",
+			"description": "A filepath to the file where web-based configuration changes are stored",
+			"name": "Server.WebConfigFile",
+			"root_default": "/etc/pelican/web-config.yaml",
+			"type": "filename"
 		}
 	},
 	{
@@ -586,9 +1692,98 @@
 		}
 	},
 	{
+		"Issuer.QDLLocation": {
+			"components": [
+				"origin"
+			],
+			"default": "/opt/qdl",
+			"description": "Location of the QDL language and scripts install on the system",
+			"name": "Issuer.QDLLocation",
+			"type": "string"
+		}
+	},
+	{
+		"Issuer.AuthenticationSource": {
+			"components": [
+				"origin"
+			],
+			"default": "OIDC",
+			"description": "How users should authenticate with the issuer.  Currently-supported values are: - `none` (default): No authentication is performed.  All requests are successful and assumed to\n  be a user named `nobody`.\n- `OIDC`: Use the server's OIDC configuration to authenticate with an external identity provider.",
+			"name": "Issuer.AuthenticationSource",
+			"type": "string"
+		}
+	},
+	{
+		"Issuer.OIDCAuthenticationRequirements": {
+			"components": [
+				"origin"
+			],
+			"default": [],
+			"description": "A list of claim-value pairs that indicate required values from the OIDC ID token to authenticate. For example, the following setting:\n``` - claim: idp_name\n  value: University of Wisconsin-Madison\n```\nwould only allow tokens with `\"idp_name\": \"University of Wisconsin-Madison\"` set to authenticate.",
+			"name": "Issuer.OIDCAuthenticationRequirements",
+			"type": "object"
+		}
+	},
+	{
+		"Issuer.OIDCAuthenticationUserClaim": {
+			"components": [
+				"origin"
+			],
+			"default": "sub",
+			"description": "The claim in the OIDC ID token to be used as the \"username\" for the issuer",
+			"name": "Issuer.OIDCAuthenticationUserClaim",
+			"type": "string"
+		}
+	},
+	{
+		"Issuer.GroupSource": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "How the issuer should determine group information based on the authenticated identity.  Valid values are: - `none` (default): No group information should be used. - `file`: Read groups from an external, JSON-formatted file.  The file should contain a single JSON object\n  with keys corresponding to the \"user\" name and the value a list of strings that are interpretted as the\n  user's groups.",
+			"name": "Issuer.GroupSource",
+			"type": "string"
+		}
+	},
+	{
+		"Issuer.GroupFile": {
+			"components": [
+				"origin"
+			],
+			"default": "none",
+			"description": "The location of a file containing group information.  The file should contain a single JSON object with keys corresponding to the \"user\" name and the value a list of strings that are interpretted as the user's groups.",
+			"name": "Issuer.GroupFile",
+			"type": "string"
+		}
+	},
+	{
+		"Issuer.GroupRequirements": {
+			"components": [
+				"origin"
+			],
+			"default": [],
+			"description": "Group membership requirements.  A request must be mapped to one of the groups in this list to successfully authenticate.",
+			"name": "Issuer.GroupRequirements",
+			"type": "stringSlice"
+		}
+	},
+	{
+		"Issuer.AuthorizationTemplates": {
+			"components": [
+				"origin"
+			],
+			"default": [],
+			"description": "The authorizations that should be generated for an authenticated request.  Value should be a list of authorized actions.\nEach action is a key-value pair with the following keys defined: - `actions`: A list of authorized actions.  Valid string values are `read`, `modify`, and `create`. - `prefix`: A prefix where the actions are authorized.  If the prefix contains the substring `$USER`, the\n  string is replaced with the authenticated username.  If the prefix contains the substring `$GROUP`, then\n  an authorization is emitted for _each group_ authenticated.\n\nFor example, if the request is authenticated as user `bbockelm` with groups `dept_a` and `dept_b`, then the following configuration:\n``` - actions: [\"read\", \"create\"]\n  prefix: /projects/$GROUP\n- actions: [\"read\", \"modify\"]\n  prefix: /home/$USER\n```\nwill result in the following authorizations: - read /projects/dept_a - create /projects/dept_a - read /projects/dept_b - create /projects/dept_b - read /home/bbockelm - modify /home/bbockelm",
+			"name": "Issuer.AuthorizationTemplates",
+			"type": "object"
+		}
+	},
+	{
 		"OIDC.ClientIDFile": {
 			"components": [
-				"nsregistry"
+				"registry",
+				"origin"
 			],
 			"default": "$ConfigBase/oidc-client-id",
 			"description": "A filepath to a file containing an OIDC Client ID. This is used by the namespace registry to establish OIDC information for authenticated registration.",
@@ -598,9 +1793,22 @@
 		}
 	},
 	{
+		"OIDC.ClientID": {
+			"components": [
+				"registry",
+				"origin"
+			],
+			"default": "none",
+			"description": "The OIDC ClientID to use for the server.",
+			"name": "OIDC.ClientID",
+			"type": "string"
+		}
+	},
+	{
 		"OIDC.ClientSecretFile": {
 			"components": [
-				"nsregistry"
+				"registry",
+				"origin"
 			],
 			"default": "$ConfigBase/oidc-client-secret",
 			"description": "A filepath to a file containing an OIDC Client Secret. This is used by the namespace registry to establish OIDC information for authenticated registration.",
@@ -612,7 +1820,8 @@
 	{
 		"OIDC.DeviceAuthEndpoint": {
 			"components": [
-				"nsregistry"
+				"registry",
+				"origin"
 			],
 			"default": "none",
 			"description": "A URL describing an OIDC Device Auth Endpoint. This is used by the namespace registry to establish OIDC information for authenticated registration.",
@@ -623,7 +1832,8 @@
 	{
 		"OIDC.TokenEndpoint": {
 			"components": [
-				"nsregistry"
+				"registry",
+				"origin"
 			],
 			"default": "none",
 			"description": "A URL describing an OIDC Token Endpoint. This is used by the namespace registry to establish OIDC information for authenticated registration.",
@@ -634,7 +1844,8 @@
 	{
 		"OIDC.UserInfoEndpoint": {
 			"components": [
-				"nsregistry"
+				"registry",
+				"origin"
 			],
 			"default": "none",
 			"description": "A URL describing an OIDC User Info Endpoint. This is used by the namespace registry to establish OIDC information for authenticated registration.",
@@ -643,24 +1854,71 @@
 		}
 	},
 	{
-		"Xrootd.Port": {
+		"OIDC.AuthorizationEndpoint": {
 			"components": [
 				"origin"
 			],
+			"default": "none",
+			"description": "A URL containing the OIDC authorization endpoint.",
+			"name": "OIDC.AuthorizationEndpoint",
+			"type": "url"
+		}
+	},
+	{
+		"OIDC.Issuer": {
+			"components": [
+				"registry",
+				"origin"
+			],
+			"default": "none",
+			"description": "The URL of the OIDC issuer.  If set, OIDC auto-discovery may be used to find other endpoints (token, user info, device auth).",
+			"name": "OIDC.Issuer",
+			"type": "url"
+		}
+	},
+	{
+		"OIDC.ClientRedirectHostname": {
+			"components": [
+				"registry",
+				"director"
+			],
+			"default": "none",
+			"description": "The hostname for the OIDC client redirect URL that the OIDC provider will redirect to after the user is authenticated\nFor development use only. Useful when developing in a container and you want to expose localhost instead of container hostname to your OAuth provider",
+			"name": "OIDC.ClientRedirectHostname",
+			"type": "string"
+		}
+	},
+	{
+		"Xrootd.Port": {
+			"components": [
+				"origin",
+				"cache"
+			],
 			"default": 8443,
-			"description": "The port over which XRootD should be made available.",
+			"deprecated": true,
+			"description": "[Deprecated] `Xrootd.Port` is deprecated and will be removed in the future release. Please migrate to use `Origin.Port` or `Cache.Port` instead.\nThe port over which XRootD should be made available. This setting is deprecated; please use the Cache.Port or Origin.Port, as appropriate, for the server.",
 			"name": "Xrootd.Port",
+			"replacedby": [
+				"Origin.Port",
+				"Cache.Port"
+			],
 			"type": "int"
 		}
 	},
 	{
 		"Xrootd.RunLocation": {
 			"components": [
-				"origin"
+				"origin",
+				"cache"
 			],
 			"default": "$XDG_RUNTIME_DIR/pelican",
-			"description": "A directory where temporary configurations will be stored for the xrootd daemon started by the origin.\nFor non-root servers, if $XDG_RUNTIME_DIR is not set, a temporary directory will be created (and removed on shutdown)",
+			"deprecated": true,
+			"description": "[Deprecated] `Xrootd.RunLocation` is deprecated and will be removed in a future release. Please migrate to use `Cache.RunLocation` or `Origin.RunLocation` instread.\nA directory where temporary configurations will be stored for the xrootd daemon started by the origin or cache. For non-root servers, if $XDG_RUNTIME_DIR is not set, a temporary directory will be created (and removed on shutdown) This setting is deprecated; please use the Cache.RunLocation or Origin.RunLocation, as appropriate, for the server.",
 			"name": "Xrootd.RunLocation",
+			"replacedby": [
+				"Cache.RunLocation",
+				"Origin.RunLocation"
+			],
 			"root_default": "/run/pelican/xrootd",
 			"type": "filename"
 		}
@@ -679,6 +1937,9 @@
 	},
 	{
 		"Xrootd.ScitokensConfig": {
+			"components": [
+				"*"
+			],
 			"default": "$ConfigBase/xrootd/scitokens.cfg",
 			"description": "The location of a file configuring xrootd's [token-based authorization subsystem](https://github.com/xrootd/xrootd/blob/master/src/XrdSciTokens/README.md). This file allows arbitrary changes to the authorization configuration and will be merged with any auto-generated configuration; it's recommended for use by experts only.",
 			"name": "Xrootd.ScitokensConfig",
@@ -722,7 +1983,8 @@
 	{
 		"Xrootd.ManagerHost": {
 			"components": [
-				"origin"
+				"origin",
+				"cache"
 			],
 			"default": "none",
 			"description": "A URL pointing toward the XRootD instance's Manager Host.",
@@ -733,7 +1995,8 @@
 	{
 		"Xrootd.SummaryMonitoringHost": {
 			"components": [
-				"origin"
+				"origin",
+				"cache"
 			],
 			"default": "none",
 			"description": "A URL pointing toward the XRootD instance's Summary Monitoring Host.",
@@ -744,7 +2007,8 @@
 	{
 		"Xrootd.DetailedMonitoringHost": {
 			"components": [
-				"origin"
+				"origin",
+				"cache"
 			],
 			"default": "none",
 			"description": "A URL pointing toward the XRootD instance's Detailed Monitoring Host.",
@@ -755,7 +2019,8 @@
 	{
 		"Xrootd.LocalMonitoringHost": {
 			"components": [
-				"origin"
+				"origin",
+				"cache"
 			],
 			"default": "none",
 			"description": "A URL pointing toward the XRootD instance's Local Monitoring Host.",
@@ -806,6 +2071,265 @@
 			"description": "The lower end of a range of monitoring ports for Prometheus configuration.",
 			"name": "Monitoring.PortHigher",
 			"type": "int"
+		}
+	},
+	{
+		"Monitoring.AggregatePrefixes": {
+			"components": [
+				"origin"
+			],
+			"default": [
+				"/*"
+			],
+			"description": "A list of path-like prefixes, potentially containing a glob (wildcard character), indicating how the Prometheus-based monitoring should aggregate records when reporting.  For example, if `/foo/*` is on the aggregate path list, then the monitoring data for a download of objects `/foo/bar` and `/foo/baz` will be aggregated into a single series, `/foo`.",
+			"name": "Monitoring.AggregatePrefixes",
+			"type": "stringSlice"
+		}
+	},
+	{
+		"Monitoring.TokenExpiresIn": {
+			"components": [
+				"origin",
+				"director",
+				"registry"
+			],
+			"default": "1h",
+			"description": "The duration of which the tokens for various Prometheus endpoints expire.\nThis includes tokens for director's Prometheus origin discovery endpoint, director's origin scraper, and server's self-scraper",
+			"name": "Monitoring.TokenExpiresIn",
+			"type": "duration"
+		}
+	},
+	{
+		"Monitoring.TokenRefreshInterval": {
+			"components": [
+				"origin",
+				"director",
+				"registry"
+			],
+			"default": "5m",
+			"description": "The interval of which the token issuer for various Prometheus endpoints refreshes the token for monitoring.\nThe tokens that are affected by this config are the same as the one in Monitoring.TokenExpiresIn. This value must be less than Monitoring.TokenExpiresIn.",
+			"name": "Monitoring.TokenRefreshInterval",
+			"type": "duration"
+		}
+	},
+	{
+		"Monitoring.MetricAuthorization": {
+			"components": [
+				"origin",
+				"cache",
+				"director",
+				"registry"
+			],
+			"default": true,
+			"description": "If authorization (Bearer token) is required for accesing /metrics endpoint",
+			"name": "Monitoring.MetricAuthorization",
+			"type": "bool"
+		}
+	},
+	{
+		"Monitoring.PromQLAuthorization": {
+			"components": [
+				"origin",
+				"cache",
+				"director",
+				"registry"
+			],
+			"default": true,
+			"description": "If authorization (Bearer token or cookie) is required for accesing /prometheus/query endpoint",
+			"name": "Monitoring.PromQLAuthorization",
+			"type": "bool"
+		}
+	},
+	{
+		"Shoveler.Enable": {
+			"components": [
+				"origin",
+				"cache"
+			],
+			"default": false,
+			"description": "Enable XRootD monitoring shoveler: https://github.com/opensciencegrid/xrootd-monitoring-shoveler",
+			"name": "Shoveler.Enable",
+			"type": "bool"
+		}
+	},
+	{
+		"Shoveler.MessageQueueProtocol": {
+			"components": [
+				"origin",
+				"cache"
+			],
+			"default": "amqp",
+			"description": "Select which protocol to use in order to connect to the MQ. Options are amqp, stomp\nFor amqp, the following configurations are required:\n - URL: amqps://username:password@example.com/vhost\n - Topic: mytopic\n - AMQPExchange: shoveled-xrd\n - AMQPTokenLocation: /etc/pelican/xrootd-monitoring-shoveler-token\n\nFor stomp, the following configurations are required:\n - URL: messagebroker.org:port\n - Topic: mytopic\n - StompUsername: username\n - StompPassword: password\n - StompCert: path/to/cert/file\n - StompCertKey: path/to/certkey/file",
+			"name": "Shoveler.MessageQueueProtocol",
+			"type": "string"
+		}
+	},
+	{
+		"Shoveler.URL": {
+			"components": [
+				"origin",
+				"cache"
+			],
+			"default": "none",
+			"description": "For amqp and stomp.\nThe URL to connect to the shoveler",
+			"name": "Shoveler.URL",
+			"type": "url"
+		}
+	},
+	{
+		"Shoveler.Topic": {
+			"components": [
+				"origin",
+				"cache"
+			],
+			"default": "none",
+			"description": "For amqp and stomp.\nThe topic of the messages. For stomp, it defaults to xrootd.shoveler",
+			"name": "Shoveler.Topic",
+			"type": "string"
+		}
+	},
+	{
+		"Shoveler.AMQPExchange": {
+			"components": [
+				"origin",
+				"cache"
+			],
+			"default": "shoveled-xrd",
+			"description": "For amqp only.\nThe exchange to shovel messages",
+			"name": "Shoveler.AMQPExchange",
+			"type": "string"
+		}
+	},
+	{
+		"Shoveler.AMQPTokenLocation": {
+			"components": [
+				"origin",
+				"cache"
+			],
+			"default": "$ConfigBase/shoveler-token",
+			"description": "For amqp only.\nA filepath to the location of the JWT used for authenticating amqp connection",
+			"name": "Shoveler.AMQPTokenLocation",
+			"root_default": "/etc/pelican/shoveler-token",
+			"type": "filename"
+		}
+	},
+	{
+		"Shoveler.StompUsername": {
+			"components": [
+				"origin",
+				"cache"
+			],
+			"default": "none",
+			"description": "For stomp only.\nUsername for authentication",
+			"name": "Shoveler.StompUsername",
+			"type": "string"
+		}
+	},
+	{
+		"Shoveler.StompPassword": {
+			"components": [
+				"origin",
+				"cache"
+			],
+			"default": "none",
+			"description": "For stomp only.\nPassword for authentication",
+			"name": "Shoveler.StompPassword",
+			"type": "string"
+		}
+	},
+	{
+		"Shoveler.StompCert": {
+			"components": [
+				"origin",
+				"cache"
+			],
+			"default": "none",
+			"description": "For stomp only.\nA filepath to the location of the TLS certifcate",
+			"name": "Shoveler.StompCert",
+			"type": "filename"
+		}
+	},
+	{
+		"Shoveler.StompCertKey": {
+			"components": [
+				"origin",
+				"cache"
+			],
+			"default": "none",
+			"description": "For stomp only.\nA filepath to the location of the private key associated with the certifacte",
+			"name": "Shoveler.StompCertKey",
+			"type": "filename"
+		}
+	},
+	{
+		"Shoveler.PortLower": {
+			"components": [
+				"origin"
+			],
+			"default": 9930,
+			"description": "The lower end of a range of Shoveler ports for Shoveler to set up UDP server",
+			"name": "Shoveler.PortLower",
+			"type": "int"
+		}
+	},
+	{
+		"Shoveler.PortHigher": {
+			"components": [
+				"origin"
+			],
+			"default": 9999,
+			"description": "The lower end of a range of Shoveler ports for Shoveler to set up UDP server",
+			"name": "Shoveler.PortHigher",
+			"type": "int"
+		}
+	},
+	{
+		"Shoveler.OutputDestinations": {
+			"components": [
+				"origin",
+				"cache"
+			],
+			"default": "none",
+			"description": "A list of \u003cIP:Port\u003e destinations to forward XRootD monitoring packet to",
+			"name": "Shoveler.OutputDestinations",
+			"type": "stringSlice"
+		}
+	},
+	{
+		"Shoveler.VerifyHeader": {
+			"components": [
+				"origin",
+				"cache"
+			],
+			"default": false,
+			"description": "Whether to verify the header of the packet matches XRootD's monitoring packet format",
+			"name": "Shoveler.VerifyHeader",
+			"type": "bool"
+		}
+	},
+	{
+		"Shoveler.QueueDirectory": {
+			"components": [
+				"origin",
+				"cache"
+			],
+			"default": "$ConfigBase/shoveler/queue",
+			"description": "Directory to store overflow of queue onto disk. The queue keeps 100 messages in memory.  If the shoveler is disconnected from the message bus, it will store messages over the 100 in memory onto disk into this directory.  Once the connection has been re-established the queue will be emptied.  The queue on disk is persistent between restarts, so a persistent directory should be used.",
+			"name": "Shoveler.QueueDirectory",
+			"root_default": "/var/spool/pelican/shoveler/queue",
+			"type": "filename"
+		}
+	},
+	{
+		"Shoveler.IPMapping": {
+			"components": [
+				"origin",
+				"cache"
+			],
+			"default": "none",
+			"description": "IP Mapping for remote IP addresses in forwarding to the destinations. You may either pass one IP address to map all messages to the configured origin, or a list of key-value pairs for one-to-one mapping.\nOne-to-all mapping:\n``` IPMapping:\n  - All: \"172.0.0.4\"\n```\nIf a packet comes in with the private ip address of 192.168.0.4, the packet origin will be changed to 172.0.0.4 The port is always preserved.\nOne-to-one mapping:\n``` IPMapping:\n  - Source: \"192.168.0.5\"\n    Dest: \"172.0.0.5\"\n  - Source: \"192.168.0.6\"\n    Dest: \"129.93.10.7\"\n```",
+			"name": "Shoveler.IPMapping",
+			"type": "object"
 		}
 	},
 	{
