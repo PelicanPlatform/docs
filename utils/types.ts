@@ -5,11 +5,11 @@ export interface VersionProps {
   }
   
 export interface ArchitecturesProps {
-    handle: (event: React.MouseEvent<HTMLElement, MouseEvent>, newAlignment: string) => void;
-    defaultArch: string;
-    defaultOs: string;
-    data: Array<string>;
-  }
+  handle: (event: React.MouseEvent<HTMLElement, MouseEvent>, newAlignment: string) => void;
+  defaultArch: string;
+  defaultOs: string;
+  archData: { [key: string]: string[] };
+}
   
 export interface OperatingSystemsProps {
     handle: (event: React.MouseEvent<HTMLElement, MouseEvent>, newAlignment: string) => void;
@@ -93,9 +93,9 @@ export const packageType = {
 };
 
 export const compatibilityRules = {
-    "darwin": ["arm64", "x86_64"],
-    "windows": ["x86_64"],
-    "linux": ["arm64", "amd64", "ppc64", "x86_64", "aarch64"]
+    "darwin": ["ARM64", "AMD64"],
+    "windows": ["AMD64"],
+    "linux": ["PowerPC", "ARM64", "AMD64"]
 };
 
 export const parameterGroups = ["origin", "registry", "director", "client", "cache"];
