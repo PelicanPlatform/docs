@@ -20,7 +20,6 @@ const ReleasesTable: React.FC<ReleasesTableProps> = ({ release , data }) => {
                 {release.assets.map((asset, index) => (
                     <TableRow key={index}>
                     <TableCell align='center'>{release.version}</TableCell>
-                    <TableCell align='center'>{asset.operatingSystem}</TableCell>
                     <TableCell align='center'>{asset.architecture}</TableCell>
                     <TableCell align='center'>
                         <Link href={asset.downloadUrl}>
