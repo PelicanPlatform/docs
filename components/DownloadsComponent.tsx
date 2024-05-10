@@ -20,7 +20,7 @@ const DownloadsComponent: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedOptions, setSelectedOptions] = React.useState({
-        arch: 'PowerPC',
+        arch: 'AMD64',
         os: 'linux',
     });
     
