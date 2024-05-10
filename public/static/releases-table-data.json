@@ -7,7 +7,6 @@
 
     "table_rows": [
         "Version",
-        "Operating System",
         "Architecture",
         "File"
     ]
