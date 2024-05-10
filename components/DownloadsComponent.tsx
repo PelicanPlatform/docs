@@ -3,18 +3,24 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Box, CircularProgress } from '@mui/material';
 import fetchFilteredReleases from "../utils/fetchReleases";
 import { FilteredRelease } from '../utils/types';
-import {OperatingSystems, Architectures, Version} from './Filters';
+import {OperatingSystems, Architectures} from './Filters';
 import ReleasesTable from './ReleasesTable';
 import data from '../public/static/releases-table-data.json';
 import { DarkLightContainer } from '@/utils/darkLightContainer';
 import { useTheme } from '@mui/material/styles';
+
+const architectures = {
+    "PowerPC": ["ppc64el", "ppc64le"],
+    "ARM64": ["aarch64", "arm64"],
+    "AMD64": ["amd64", "x86_64"]
+};
 
 const DownloadsComponent: React.FC = () => {
     const [originalData, setOriginalData] = useState<FilteredRelease[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedOptions, setSelectedOptions] = React.useState({
-        arch: 'x86_64',
+        arch: 'PowerPC',
         os: 'linux',
     });
     
@@ -44,18 +50,6 @@ const DownloadsComponent: React.FC = () => {
         }
     };
 
-    const handleVersion = (
-        event: React.MouseEvent<HTMLElement, MouseEvent>,
-        newVersion: string | null,
-    ) => {
-        if (newVersion) {
-        setSelectedOptions(prevOptions => ({
-            ...prevOptions,
-            version: newVersion
-            }));
-        }
-    };
-
     useEffect(() => {
         const fetchAssets = async () => {
             setLoading(true);
@@ -73,24 +67,13 @@ const DownloadsComponent: React.FC = () => {
         fetchAssets();
     }, []);
 
-    const uniqueVersions = useMemo<string[]>(() => {
-        const unique = new Set<string>();
-        originalData.forEach(release => {
-            unique.add(release.version.split('.').slice(0, 2).join('.')); // Only major.minor
-        });
-        return Array.from(unique);
-    }, [originalData]);
-
-    
-
     const filteredData = useMemo(() => {
-      
+        const architectureIdentifiers = selectedOptions.arch ? (architectures[selectedOptions.arch] || []) : [];
         // Now, filter assets within those releases based on the selected OS and Arch
         const releasesWithFilteredAssets = originalData.map(release => {
           const filteredAssets = release.assets.filter(asset => {
             const osMatch = !selectedOptions.os || asset.operatingSystem.toLowerCase().includes(selectedOptions.os.toLowerCase());
-            const archMatch = !selectedOptions.arch || asset.architecture.includes(selectedOptions.arch) || 
-                              (selectedOptions.arch === 'PPC64' && (asset.architecture.includes('ppc64el') || asset.architecture.includes('ppc64le')));
+            const archMatch = !selectedOptions.arch || architectureIdentifiers.some(archIdentifier => asset.architecture.includes(archIdentifier));
       
             return osMatch && archMatch;
           })
@@ -133,7 +116,7 @@ const DownloadsComponent: React.FC = () => {
                         },
                     }}>
                         <OperatingSystems handle={handleOs} defaultOs={selectedOptions.os} defaultArch={selectedOptions.arch} data={data.operating_systems} />
-                        <Architectures handle={handleArch} defaultArch={selectedOptions.arch} defaultOs={selectedOptions.os} data={data.architectures} />
+                        <Architectures handle={handleArch} defaultArch={selectedOptions.arch} defaultOs={selectedOptions.os} archData={architectures} />
                     </Box>
                         {filteredData.map(release => (
                                     <ReleasesTable key={release.version} release={release} data={data.table_rows} />

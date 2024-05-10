@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { compatibilityRules, ArchitecturesProps, OperatingSystemsProps, VersionProps } from '../utils/types';
 
-export const Architectures:React.FC<ArchitecturesProps> = ({handle, defaultArch, data, defaultOs}) => {
+export const Architectures:React.FC<ArchitecturesProps> = ({handle, defaultArch, archData, defaultOs}) => {
 
   const isDisabled = (arch: string) => {
     // If an OS is selected, check if the current arch is compatible
@@ -11,23 +11,34 @@ export const Architectures:React.FC<ArchitecturesProps> = ({handle, defaultArch,
     }
     return false;
   };
+
+  const architectureOptions = Object.entries(archData).map(([key, value]) => ({
+    label: key,
+    value: value.join(', ') // Joining all chipset identifiers for a given architecture
+  }));
   return (
       <Box sx={{ display: "flex", flexDirection:"column", alignItems:"center", margin: "0 10px"}}>
           <Typography variant="overline" display="block" gutterBottom>
           Architectures
           </Typography>
           <ToggleButtonGroup
-              color="primary"
-              value={defaultArch}
-              exclusive
-              aria-label="Architecture"
-              onChange={handle}
-              size='small'
-          >   
-              {data.map((arch) => (
-                <ToggleButton key={arch} value={arch} disabled={isDisabled(arch)}>{arch}</ToggleButton>
-              ))}
-          </ToggleButtonGroup>
+            color="primary"
+            value={defaultArch}
+            exclusive
+            aria-label="Architecture"
+            onChange={handle}
+            size="small"
+        >
+            {architectureOptions.map((option) => (
+                <ToggleButton 
+                    key={option.label} 
+                    value={option.label} 
+                    disabled={isDisabled(option.label)}
+                >
+                    {option.label}
+                </ToggleButton>
+            ))}
+        </ToggleButtonGroup>
       </Box>
   )
 }
