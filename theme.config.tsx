@@ -1,6 +1,10 @@
 import React from 'react'
 import { DocsThemeConfig } from 'nextra-theme-docs'
 
+const BuildTime: React.FC<{ timestamp: Date }> = ({ timestamp }) => {
+  return <p>Last updated: {timestamp.toLocaleDateString()}</p>
+}
+
 const config: DocsThemeConfig = {
   logo: (
       <>
@@ -28,6 +32,7 @@ const config: DocsThemeConfig = {
   project: {
     link: 'https://github.com/PelicanPlatform/pelican',
   },
+  gitTimestamp: BuildTime,
   footer: {
     text: 'Pelican Documentation',
   },
