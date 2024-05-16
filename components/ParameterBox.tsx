@@ -20,12 +20,6 @@ export const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ paramet
 				sx={{ marginTop: ".8em" }}
 				onMouseEnter={() => setHover(true)}
 				onMouseLeave={() => setHover(false)}
-				onClick={async () => {
-					// Copy link to clipboard
-					const url = new URL(window.location.href);
-					url.hash = parameterId;
-					await navigator.clipboard.writeText(url.toString());
-				}}
 		>
 			<Paper elevation={hover ? 3 : 1} sx={{ padding: "0.7em" }}>
 				<Box mb={1}>
@@ -34,7 +28,15 @@ export const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ paramet
 							{parameterName}
 						</Typography>
 						{hover && (
-							<IconButton size={"small"}>
+							<IconButton 
+								size={"small"} 
+								onClick={async (e: React.MouseEvent<HTMLButtonElement>) => {
+									e.stopPropagation()
+									// Copy link to clipboard
+									const url = new URL(window.location.href);
+									url.hash = parameterId;
+									await navigator.clipboard.writeText(url.toString());
+							}}>
 								<Link fontSize={"small"}/>
 							</IconButton>
 						)}
