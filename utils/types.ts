@@ -8,7 +8,7 @@ export interface ArchitecturesProps {
   handle: (event: React.MouseEvent<HTMLElement, MouseEvent>, newAlignment: string) => void;
   defaultArch: string;
   defaultOs: string;
-  archData: { [key: string]: string[] };
+  archs: string[];
 }
   
 export interface OperatingSystemsProps {
@@ -42,14 +42,16 @@ name: string;
 downloadUrl: string;
 id: number;
 assetVersion: string; // Version of the release this asset belongs to
-operatingSystem: string;
+specialPackage: "OSDF" | "Server" | ""; // Special package for OSDF/Pelican server
+osInternal: string;
+osDisplayed: string;
 architecture: string;
 packageInfo?: string;
 packageDescription?: string;
 }
 
 export interface ReleasesTableProps {
-    data: Array<string>;
+    rowNames: Array<string>;
     release: FilteredRelease;
 }
 
@@ -78,24 +80,57 @@ export interface PreProps {
   children: React.ReactNode;
 }
 
-export const operatingSystems = ['Darwin', 'Linux', 'Windows'];
+export const SemverRegex = /^v(\d+)\.(\d+)\.(\d+)$/;
 
-export const architectures = ['arm64', 'amd64', 'ppc64le', 'ppc64el', 'x86_64', 'aarch64'];
+export enum OSEnums {
+  Linux = "Linux",
+  macOS = "macOS",
+  Windows = "Windows"
+}
 
-export const packageType = {
-    "rpm": "You want to install a .rpm package if you are using a Red Hat-based Linux distribution system such as: Red Hat Enterprise Linux, CentOS, Fedora, or openSUSE."
-    , "apk": "You want to install a .apk package if you are using an Alpine Linux system."
-    , "deb": "You want to install a .deb package if you are using a Linux distribution system such as: Debian, Ubuntu, or something similar."
-    , "zip": "If you want a more manual setup, you can download the .zip files and extract the binary where you need it."
-    , "tar.gz": "If you want a more manual setup, you can download the .tar.gz files and extract the binary where you need it."
-    , "osdf": "Install this package if you want more convenient access to OSDF, including the stashcp program and the HTCondor file transfer plugin for osdf:// URLs"
-    , "txt": "Download this file to verify the correctness of your other downloads."
+export enum ArchEnums {
+  X86_64 = "X86_64",
+  ARM64 = "ARM64",
+  PowerPC = "PowerPC"
+}
+
+export const archMapping = {
+  [ArchEnums.X86_64]: ["amd64", "x86_64"],
+  [ArchEnums.ARM64]: ["aarch64", "arm64"],
+  [ArchEnums.PowerPC]: ["ppc64el", "ppc64le"],
 };
 
 export const compatibilityRules = {
-    "darwin": ["ARM64", "AMD64"],
-    "windows": ["AMD64"],
-    "linux": ["PowerPC", "ARM64", "AMD64"]
+  [OSEnums.macOS]: [ArchEnums.ARM64, ArchEnums.X86_64],
+  [OSEnums.Windows]: [ArchEnums.X86_64],
+  [OSEnums.Linux]: [ArchEnums.PowerPC, ArchEnums.ARM64, ArchEnums.X86_64]
 };
+
+export const packageDisplayedOS = [
+  {
+    regex: ".*\\.apk$",
+    os: "Alpine"
+  },
+  {
+    regex: ".*\\.deb$",
+    os: "Ubuntu"
+  },
+  {
+    regex: ".*\\.rpm$",
+    os: "RHEL"
+  },
+  {
+    regex: ".*_Darwin_.*",
+    os: "macOS"
+  },
+  {
+    regex: ".*_Windows_.*",
+    os: "Windows"
+  },
+  {
+    regex: ".*_Linux_.*\\.tar\\.gz$",
+    os: "Linux"
+  }
+]
 
 export const parameterGroups = ["origin", "registry", "director", "client", "cache"];

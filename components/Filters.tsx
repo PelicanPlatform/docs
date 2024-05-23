@@ -1,8 +1,8 @@
 import React from 'react';
 import { Box, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
-import { compatibilityRules, ArchitecturesProps, OperatingSystemsProps, VersionProps } from '../utils/types';
+import { compatibilityRules, ArchitecturesProps, OperatingSystemsProps } from '../utils/types';
 
-export const Architectures:React.FC<ArchitecturesProps> = ({handle, defaultArch, archData, defaultOs}) => {
+export const Architectures:React.FC<ArchitecturesProps> = ({handle, defaultArch, archs, defaultOs}) => {
 
   const isDisabled = (arch: string) => {
     // If an OS is selected, check if the current arch is compatible
@@ -12,10 +12,6 @@ export const Architectures:React.FC<ArchitecturesProps> = ({handle, defaultArch,
     return false;
   };
 
-  const architectureOptions = Object.entries(archData).map(([key, value]) => ({
-    label: key,
-    value: value.join(', ') // Joining all chipset identifiers for a given architecture
-  }));
   return (
       <Box sx={{ display: "flex", flexDirection:"column", alignItems:"center", margin: "0 10px"}}>
           <Typography variant="overline" display="block" gutterBottom>
@@ -29,13 +25,13 @@ export const Architectures:React.FC<ArchitecturesProps> = ({handle, defaultArch,
             onChange={handle}
             size="small"
         >
-            {architectureOptions.map((option) => (
+            {archs.map((option) => (
                 <ToggleButton 
-                    key={option.label} 
-                    value={option.label} 
-                    disabled={isDisabled(option.label)}
+                    key={option} 
+                    value={option} 
+                    disabled={isDisabled(option)}
                 >
-                    {option.label}
+                    {option}
                 </ToggleButton>
             ))}
         </ToggleButtonGroup>
@@ -78,25 +74,3 @@ export const OperatingSystems:React.FC<OperatingSystemsProps> = ({handle, defaul
   )
 }
 
-export const Version:React.FC<VersionProps> = ({handle, defaultVersion, data}) => {
-  return (
-    <Box sx={{ display: "flex", flexDirection:"column", alignItems:"center", margin: "0 0 0 10px"}}>
-      <Typography variant="overline" display="block" gutterBottom>
-      Versions
-      </Typography>
-      <ToggleButtonGroup
-        color="primary"
-        value={defaultVersion}
-        exclusive
-        aria-label="Version"
-        onChange={handle}
-        size='small'
-      >
-        {data.map((version) => (
-          <ToggleButton key={version} value={version}>{version}</ToggleButton>
-        ))}
-      </ToggleButtonGroup>
-    </Box>
-    
-  )
-}
