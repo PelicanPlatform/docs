@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Box, CircularProgress, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import fetchFilteredReleases from "../utils/fetchReleases";
 import { FilteredRelease, ArchEnums, OSEnums, SemverRegex } from '../utils/types';
-import {OperatingSystems, Architectures} from './Filters';
+import {OperatingSystems, Architectures, Versions} from './Filters';
 import ReleasesTable from './ReleasesTable';
 import data from '../public/static/releases-table-data.json';
 import { DarkLightContainer } from '@/utils/darkLightContainer';
@@ -91,7 +91,6 @@ const DownloadsComponent: React.FC = () => {
     
 
     const filteredData = useMemo(() => {
-        console.log("update with", selectedOptions)
         const selectedArch = selectedOptions.arch;
         const filteredByVersion = structuredClone(originalData.filter((release) => release.version == selectedOptions.version)[0])
         if (!filteredByVersion) {
@@ -145,18 +144,7 @@ const DownloadsComponent: React.FC = () => {
                             flexDirection: 'column',
                         },
                     }}>
-                        <Box sx={{ display: "flex", flexDirection:"column", alignItems:"center", margin: "0 20px 0 0"}}>
-                            <Typography variant="overline" display="block" gutterBottom>Version</Typography>
-                            <Select size='small' aria-label='Version Selection' value={selectedOptions.version} onChange={(event: SelectChangeEvent) => {
-                                setSelectedOptions((prev) => ({...prev, version: event.target.value}))
-                            }}>
-                                {versions.map((version) => {
-                                    return (
-                                        <MenuItem key={version} value={version}>{version}</MenuItem>
-                                    )
-                                })}
-                            </Select>
-                        </Box>
+                        <Versions handleChange={(e) => {setSelectedOptions((prev) => ({...prev, version: e.target.value}))}} versions={versions} value={selectedOptions.version}/>
                         <OperatingSystems handle={handleOs} defaultOs={selectedOptions.os} defaultArch={selectedOptions.arch} data={Object.values(OSEnums)} />
                         <Architectures handle={handleArch} defaultArch={selectedOptions.arch} defaultOs={selectedOptions.os} archs={Object.values(ArchEnums)} />
                     </Box>

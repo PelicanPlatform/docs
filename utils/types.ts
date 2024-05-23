@@ -1,7 +1,9 @@
+import { SelectChangeEvent } from "@mui/material";
+
 export interface VersionProps {
-    handle: (event: React.MouseEvent<HTMLElement, MouseEvent>, newAlignment: string) => void;
-    defaultVersion: string;
-    data: Array<string>;
+    handleChange: (event: SelectChangeEvent) => void;
+    value: string;
+    versions: string[];
   }
   
 export interface ArchitecturesProps {

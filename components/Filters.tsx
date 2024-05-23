@@ -1,6 +1,22 @@
 import React from 'react';
-import { Box, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
-import { compatibilityRules, ArchitecturesProps, OperatingSystemsProps } from '../utils/types';
+import { Box, ToggleButton, ToggleButtonGroup, Typography, Select, MenuItem, SelectChangeEvent } from '@mui/material';
+import { compatibilityRules, ArchitecturesProps, OperatingSystemsProps, VersionProps } from '../utils/types';
+
+
+export const Versions:React.FC<VersionProps> = ({handleChange, value, versions}) => {
+    return (
+        <Box sx={{ display: "flex", flexDirection:"column", alignItems:"center", margin: "0 20px 0 0"}}>
+            <Typography variant="overline" display="block" gutterBottom>Versions</Typography>
+            <Select size='small' aria-label='Version Selection' value={value} onChange={handleChange}>
+                {versions.map((version) => {
+                    return (
+                        <MenuItem key={version} value={version}>{version}</MenuItem>
+                    )
+                })}
+            </Select>
+        </Box>      
+    )
+}
 
 export const Architectures:React.FC<ArchitecturesProps> = ({handle, defaultArch, archs, defaultOs}) => {
 
