@@ -31,7 +31,9 @@ const config: DocsThemeConfig = {
   footer: {
     text: 'Pelican Documentation',
   },
-  
+  sidebar: {
+    defaultMenuCollapseLevel: 1,
+  }
 }
 
 export default config
