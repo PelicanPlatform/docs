@@ -65,6 +65,12 @@ const Parameters: React.FC<{ parameters: ParametersArray }> = ({ parameters }) =
 				key={group}
 				onMouseEnter={() => setHover(true)}
 				onMouseLeave={() => setHover(false)}
+				onClick={async () => {
+					// Copy link to clipboard
+					const url = new URL(window.location.href);
+					url.hash = group
+					await navigator.clipboard.writeText(url.toString());
+				}}
 				>
 				<Typography 
 					sx={{ 
@@ -77,16 +83,7 @@ const Parameters: React.FC<{ parameters: ParametersArray }> = ({ parameters }) =
 				>
 					{group}
 					{hover && group && group !== "" && (
-						<IconButton 
-							size={"small"}
-							onClick={async (e: React.MouseEvent<HTMLButtonElement>) => {
-								e.stopPropagation()
-								// Copy link to clipboard
-								const url = new URL(window.location.href);
-								url.hash = group
-								await navigator.clipboard.writeText(url.toString());
-							}}
-						>
+						<IconButton size={"small"}>
 							<Link fontSize={"small"}/>
 						</IconButton>
 					)}
