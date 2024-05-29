@@ -1,13 +1,9 @@
 {    
-    "operating_systems": [
-        "linux",
-        "darwin",
-        "windows"
-    ],
-
     "table_rows": [
         "Version",
         "Architecture",
-        "File"
+        "OS",
+        "File",
+        "Note"
     ]
 }
