@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useEffect, useMemo } from 'react';
-import { Box, CircularProgress, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
+import { Box, CircularProgress} from '@mui/material';
 import fetchFilteredReleases from "../utils/fetchReleases";
 import { FilteredRelease, ArchEnums, OSEnums, SemverRegex } from '../utils/types';
 import {OperatingSystems, Architectures, Versions} from './Filters';
