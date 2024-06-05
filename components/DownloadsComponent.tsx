@@ -5,7 +5,6 @@ import fetchFilteredReleases from "../utils/fetchReleases";
 import { FilteredRelease, ArchEnums, OSEnums, SemverRegex } from '../utils/types';
 import {OperatingSystems, Architectures, Versions} from './Filters';
 import ReleasesTable from './ReleasesTable';
-import data from '../public/static/releases-table-data.json';
 import { DarkLightContainer } from '@/utils/darkLightContainer';
 import { useTheme } from '@mui/material/styles';
 import { parseEnum } from '@/utils/utils';
@@ -15,6 +14,14 @@ interface optionMatrix {
     os: OSEnums | ""
     version: string
 }
+
+const downloadTableHeader = [
+    "Version",
+    "Architecture",
+    "OS",
+    "File",
+    "Variant"
+]
 
 const DownloadsComponent: React.FC = () => {
     const [originalData, setOriginalData] = useState<FilteredRelease[]>([]);
@@ -148,7 +155,7 @@ const DownloadsComponent: React.FC = () => {
                         <OperatingSystems handle={handleOs} defaultOs={selectedOptions.os} defaultArch={selectedOptions.arch} data={Object.values(OSEnums)} />
                         <Architectures handle={handleArch} defaultArch={selectedOptions.arch} defaultOs={selectedOptions.os} archs={Object.values(ArchEnums)} />
                     </Box>
-                    {filteredData && <ReleasesTable key={filteredData.version} release={filteredData} rowNames={data.table_rows} />}
+                    {filteredData && <ReleasesTable key={filteredData.version} release={filteredData} rowNames={downloadTableHeader} />}
                 </>
             );
         }
