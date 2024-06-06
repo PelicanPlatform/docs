@@ -3,11 +3,10 @@ import {
     Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Link, Tooltip,
     Chip} 
     from '@mui/material';
-import InfoIcon from '@mui/icons-material/Info';
 import { ReleasesTableProps } from '../utils/types';
 
-const OSDFNote = "This package is compatible with Open Science Data Federation (OSDF). Download this package if you plan to use it in OSDF."
-const ServerNote = "This package includes Pelican origin/cache server dependencies. Download this package if you want to serve a Pelican origin or cache server."
+const OSDFNote = "This package is compatible with Open Science Data Federation (OSDF). Download this package if you plan to use it in OSDF. Note that you need to install Pelican package first."
+const ServerNote = "This package includes Pelican origin/cache server dependencies. Download this package if you want to serve a Pelican origin or cache server. Note that you need to install Pelican package first."
 
 const ReleasesTable: React.FC<ReleasesTableProps> = ({ release , rowNames }) => {
     return(
@@ -35,7 +34,7 @@ const ReleasesTable: React.FC<ReleasesTableProps> = ({ release , rowNames }) => 
                         {
                             asset.specialPackage && (
                                 <Tooltip title={asset.specialPackage === "OSDF" ? OSDFNote : ServerNote} placement='right' arrow>
-                                    <Chip label={asset.specialPackage} color="primary" variant="outlined"/>
+                                    <Chip label={asset.specialPackage} color="primary" variant="outlined" onClick={() => {window.location.hash = "#install-osdf-or-server-package"}}/>
                                 </Tooltip>
                             )
                         }
