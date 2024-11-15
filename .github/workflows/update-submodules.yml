@@ -39,5 +39,3 @@ jobs:
     needs: Update-Submodules
     uses: .github/workflows/nextjs.yml@master
     secrets: inherit
-    with:
-      tag: ${{ needs.Update-Submodules.outputs.tag }}
