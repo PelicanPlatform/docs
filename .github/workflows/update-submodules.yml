@@ -36,5 +36,5 @@ jobs:
 
   Call-NextJS-Actions:
     needs: Update-Submodules
-    uses: pelican/docs/.github/workflows/nextjs.yml@main
+    uses: PelicanPlatform/docs/.github/workflows/nextjs.yml@main
     secrets: inherit
