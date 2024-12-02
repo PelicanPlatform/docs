@@ -26,7 +26,7 @@ const ReleasesTable: React.FC<ReleasesTableProps> = ({ release , rowNames }) => 
                     <TableCell align='center'>{asset.architecture}</TableCell>
                     <TableCell align='center'>{asset.osDisplayed}</TableCell>
                     <TableCell align='center'>
-                        <Link href={asset.downloadUrl}>
+                        <Link href={"https://dl.pelicanplatform.org/" + asset.downloadUrl.replace("https://github.com/PelicanPlatform/pelican/releases/download/", "").substring(1)}>
                                 {asset.name}
                         </Link>
                     </TableCell>

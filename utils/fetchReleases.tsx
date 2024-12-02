@@ -1,4 +1,6 @@
+import semver from 'semver'
 import { Release, FilteredRelease, packageDisplayedOS, OSEnums, archMapping } from './types';
+import {getAllGithub} from "@/utils/utils";
 
 function getDisplayedOS(filename: string) {
   for (const rule of packageDisplayedOS) {
@@ -24,19 +26,28 @@ function getArchitecture(filename: string) {
 
 
 async function fetchFilteredReleases(): Promise<FilteredRelease[]> {
-  const response = await fetch('https://api.github.com/repos/PelicanPlatform/pelican/releases');
-  const releases: Release[] = await response.json();
+  const releases = await getAllGithub<Release>('https://api.github.com/repos/PelicanPlatform/pelican/releases');
 
   // Sort releases by version using semver sort (consider using a library for robust sorting)
   const sortedReleases = releases.sort((a, b) => b.tag_name.localeCompare(a.tag_name, undefined, {numeric: true, sensitivity: 'base'}));
 
   let filteredReleases: FilteredRelease[] = [];
+  let includedMinorReleases: Set<string> = new Set();
 
   for (const release of sortedReleases) {
     // Ignore the release if it's a prerelease
     if (release.prerelease) {
       continue;
     }
+
+    // Ignore the release if it's a minor release that we've already included
+    const minorVersion = semver.major(release.tag_name) + semver.minor(release.tag_name);
+    if (includedMinorReleases.has(minorVersion)) {
+      continue;
+    }
+
+    // Add the minor version to the set of included minor releases
+    includedMinorReleases.add(minorVersion);
 
     filteredReleases.push({
       version: release.tag_name,
@@ -54,8 +65,9 @@ async function fetchFilteredReleases(): Promise<FilteredRelease[]> {
         };
       })
     });
-
   }
+
+
 
   return filteredReleases;
 }

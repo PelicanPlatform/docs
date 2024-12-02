@@ -67,7 +67,7 @@ const DownloadsComponent: React.FC = () => {
                 const releases = await fetchFilteredReleases(); // This function should return an array of FilteredRelease
                 setOriginalData(releases);
                 setSelectedOptions((prev) => ({...prev, version: prev.version ? prev.version : releases[0].version}))
-                setVersions(releases.map(release => release.version).filter(version => version >= "v7.6.5"))
+                setVersions(releases.map(release => release.version))
             } catch (e) {
                 setError('Failed to fetch release assets');
                 console.error(e);
