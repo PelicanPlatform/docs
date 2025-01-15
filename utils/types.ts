@@ -63,6 +63,7 @@ export interface ParameterDetail {
 	description: string;
 	name: string;
 	type: string;
+  root_default?: string;
   }
   
 export interface Parameter {
