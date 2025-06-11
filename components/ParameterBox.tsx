@@ -70,7 +70,7 @@ export const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ paramet
 					</Typography>
 					{parameter?.root_default &&
 							<Typography variant="body2">
-								Root Default: {parameter.default === "" ? '""' : parameter.default.toString()}
+								Root Default: {parameter?.root_default === "" ? '""' : parameter?.root_default.toString()}
 							</Typography>
 					}
 				</Box>
