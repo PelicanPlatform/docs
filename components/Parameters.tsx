@@ -1,3 +1,5 @@
+'use client';
+
 import { Box, Typography, Autocomplete, TextField, Divider, IconButton} from '@mui/material';
 import React, {useState, useMemo} from "react";
 import { ParametersArray, ParameterDetail } from "../utils/types";
