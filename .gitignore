@@ -4,3 +4,4 @@ node_modules
 _pagefind/
 app/
 public/pelican
+out/

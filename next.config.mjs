@@ -24,10 +24,6 @@ const config = async (phase, { defaultConfig }) => {
       nextImageExportOptimizer_storePicturesInWEBP: "true",
       nextImageExportOptimizer_exportFolderName: "nextImageExportOptimizer",
       nextImageExportOptimizer_generateAndUseBlurImages: "true",
-    },
-    webpack: (config, { buildId, dev }) => {
-      config.resolve.symlinks = false
-      return config
     }
   }
 };
