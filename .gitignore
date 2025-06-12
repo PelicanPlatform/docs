@@ -1,3 +1,6 @@
 .next
 node_modules
 .env.local
+_pagefind/
+app/
+public/pelican
