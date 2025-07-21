@@ -23,12 +23,12 @@ const MarkdownRender: React.FC<{ content: string }> = ({ content }) => {
                         fontFamily: "ui-monospace, monospace",
                         fontWeight: "400",
                         fontSize: '.9em',
-                        backgroundColor: theme.palette.mode == "dark" ? '#19222d' : 'rgba(0,0,0,0.03)',
+                        backgroundColor: 'rgba(0,0,0,0.03)',
                         borderWidth: '1px',
                         borderColor: 'rgba(0,0,0.0.04)',
                         borderRadius: '0.375rem',
                         padding: '.125rem .25em .125rem .25em',
-                        color: theme.palette.mode == "dark" ? "#e5f0fe" : 'rgba(51,65,85,1)',
+                        color: 'rgba(51,65,85,1)',
                     };
 
                     // If it has no language tag, it's inline code
@@ -56,7 +56,7 @@ const MarkdownRender: React.FC<{ content: string }> = ({ content }) => {
                         color: 'rgb(51, 65, 85)',
                         fontFamily: "ui-monospace, monospace",
                         fontWeight: "400",
-                        backgroundColor: theme.palette.mode == "dark" ? '#19222d' : 'rgba(0, 93, 199, 0.05)',
+                        backgroundColor: 'rgba(0, 93, 199, 0.05)',
                         borderColor: "rgb(229, 231, 235)",
                         borderRadius: '12px',
                         padding: '1rem',
