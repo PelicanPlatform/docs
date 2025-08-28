@@ -55,7 +55,7 @@ export const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ paramet
 				<Box p={1} sx={{
 					borderRadius: "0.5em",
 					marginTop: "0.5em",
-					backgroundColor: theme.palette.mode === "light" ? "#e7e7e7" : "#666666"
+					backgroundColor: "#e7e7e7"
 				}}>
 					{parameter.components && (
 							<Typography variant="body2">
