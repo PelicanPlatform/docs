@@ -3,9 +3,7 @@
   "version": "0.0.1",
   "description": "Documentation for Pelican",
   "scripts": {
-    "predev": "node --env-file .env.local scripts/predev.mjs",
-    "dev": "next dev",
-    "prebuild": "node --env-file .env.local scripts/predev.mjs",
+    "dev": "node --env-file .env.local scripts/dev.mjs",
     "build": "next build",
     "postbuild": "pagefind --site .next/server/app --output-path out/_pagefind && next-image-export-optimizer",
     "start": "npx serve@latest out"
