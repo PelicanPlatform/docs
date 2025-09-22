@@ -19,8 +19,12 @@ const Parameters: React.FC<{ parameters: ParametersArray }> = ({ parameters }) =
 			const parameterName = Object.keys(parameter)[0].toLowerCase();
 			const detail = Object.values(parameter)[0];
 
-			// Ensure detail.components is defined and is an array before calling includes.
-			const isComponentMatch = selectedComponent ? (Array.isArray(detail.components) && detail.components.includes(selectedComponent)) : true;
+			const isComponentMatch =
+				selectedComponent ?
+					(
+						detail.components.includes(selectedComponent)
+						|| detail.components[0] === "*"
+					) : true;
 			return parameterName.includes(searchLower) && isComponentMatch;
 		});
 	}, [searchValue, parameters, selectedComponent]);
