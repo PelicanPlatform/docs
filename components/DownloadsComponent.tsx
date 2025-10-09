@@ -5,7 +5,6 @@ import fetchFilteredReleases from "../utils/fetchReleases";
 import { FilteredRelease, ArchEnums, OSEnums, SemverRegex } from '../utils/types';
 import {OperatingSystems, Architectures, Versions} from './Filters';
 import ReleasesTable from './ReleasesTable';
-import { DarkLightContainer } from '@/utils/darkLightContainer';
 import { useTheme } from '@mui/material/styles';
 import { parseEnum } from '@/utils/utils';
 
@@ -162,7 +161,6 @@ const DownloadsComponent: React.FC = () => {
     };
 
     return (
-        <DarkLightContainer>
         <Box sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -173,7 +171,6 @@ const DownloadsComponent: React.FC = () => {
         }}>
             {renderContent()}
         </Box>
-        </DarkLightContainer>
     );
 };
 

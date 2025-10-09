@@ -98,7 +98,7 @@ const Parameters: React.FC<{ parameters: ParametersArray }> = ({ parameters }) =
 				<Divider sx={{ height: "0.5em", backgroundColor: "#0885ff", width: "100%", borderRadius: "0.5em" }} />
 				)}
 				{groupParams.map((param, index) => (
-				<ParameterBox key={index} parameter={param} />
+				<ParameterBox key={param.name} parameter={param} />
 				))}
 			</Box>
 			))}

@@ -12,7 +12,6 @@ export const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ paramet
 	const groupName = parts.length > 1 ? parts.slice(0, -1).join('.') : null;
 	const parameterName = parts.length > 1 ? parts[parts.length - 1] : parameter.name;
 	const parameterId = parameter.name.replace(".", "-")
-	const theme = useTheme();
 
 	return (
 	  <Box
@@ -55,7 +54,7 @@ export const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ paramet
 				<Box p={1} sx={{
 					borderRadius: "0.5em",
 					marginTop: "0.5em",
-					backgroundColor: theme.palette.mode === "light" ? "#e7e7e7" : "#666666"
+					backdropFilter: "contrast(1)"
 				}}>
 					{parameter.components && (
 							<Typography variant="body2">

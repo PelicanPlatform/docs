@@ -1,28 +1,56 @@
 'use client';
 
-import {createTheme} from "@mui/material/styles";
-import {ThemeProvider as MuiThemeProvider} from "@mui/material/styles";
+import React, { useEffect } from 'react'
 import { useTheme } from 'next-themes'
+import { ThemeProvider as MuiThemeProvider, createTheme, useColorScheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 
-import {useMemo} from "react";
+const muiTheme = createTheme({
+	colorSchemes: {
+		dark: true,
+	},
+});
 
-const ThemeProvider = ({children}) => {
+const MaterialThemeProvider = ({ children }: { children: React.ReactNode }) => {
+	return (
 
-	const theme = useTheme()
-
-	const muiTheme = useMemo(
-		() =>
-			createTheme({
-				palette: {
-					mode: theme.theme as 'light' || 'dark',
-				},
-			}),
-		[theme],
-	);
-
-	return <MuiThemeProvider theme={muiTheme}>
-		{children}
-	</MuiThemeProvider>
+		<MuiThemeProvider theme={muiTheme}>
+			<>
+				<CssBaseline />
+				{children}
+			</>
+		</MuiThemeProvider>
+	)
 }
+
+const ThemeUnifier = ({ children }: { children: React.ReactNode }) => {
+
+	const { theme } = useTheme();
+	const { mode, setMode } = useColorScheme();
+
+	// Sync MUI mode with Nextra theme
+	useEffect(() => {
+		if(theme !== mode){
+			setMode(theme as 'light' | 'dark' | 'system');
+		}
+	}, [theme, mode]);
+
+	return (
+		<>
+			{children}
+		</>
+	)
+}
+
+const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+	return (
+		<MaterialThemeProvider>
+			<ThemeUnifier>
+				{children}
+			</ThemeUnifier>
+		</MaterialThemeProvider>
+	)
+}
+
 
 export default ThemeProvider;
