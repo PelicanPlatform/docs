@@ -81,7 +81,7 @@ jobs:
           latest_mapping = {minor: sorted(minor_to_patches[minor], key=version_key)[-1] for minor in minors}
 
           # Output latest minor
-          latest = minors[-1] if minors else ''
+          latest = [*latest_mapping.values()][-1] if minors else ''
           print(f"latest={latest}")
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"latest={latest}\n")
@@ -178,6 +178,13 @@ jobs:
 
       - name: List all aggregated sites
         run: ls -l
+
+      - name: Rename to minor versions
+        run: |
+          for dir in docs-${{ github.run_id }}-*; do
+            version=$(echo $dir | sed -E 's/docs-[0-9]+-(v[0-9]+\.[0-9]+)\.[0-9]+/\1/')
+            mv "$dir" "$version"
+          done
 
       - name: Update latest
         run: cp -r ${{ needs.define-matrix.outputs.latest }} .
