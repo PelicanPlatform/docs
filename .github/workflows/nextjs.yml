@@ -61,8 +61,8 @@ jobs:
             key=lambda tag: [int(x) for x in re.findall(r'\d+', tag)]
           )
           
-          # Take the top 30 most recent tags
-          patch_tags = patch_tags[-10:]
+          # IMPORTANT: Take all versions after v7.18.0
+          patch_tags = [tag for tag in patch_tags if [int(x) for x in re.findall(r'\d+', tag)] >= [7, 18, 0]]
 
           # Build mapping: minor -> list of patch tags
           minor_to_patches = {}
