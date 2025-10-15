@@ -132,7 +132,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ./${{ steps.get-patch.outputs.patch }}
-          key: pelican-doc-site-${{ steps.get-patch.outputs.patch }}
+          key: pelican-doc-site-${{ patch.minor }}-${{ steps.get-patch.outputs.patch }}
 
       - name: Checkout main repo and submodules
         if: steps.cache-site.outputs.cache-hit != 'true'
