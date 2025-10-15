@@ -4,7 +4,7 @@ const config = async (phase, { defaultConfig }) => {
   const withNextra = nextra({});
   return {
     ...withNextra(),
-		basePath: process.env.BASE_PATH || '',
+		basePath: process.env?.BASE_PATH === undefined || process.env?.BASE_PATH === '/' ? '' : process.env?.BASE_PATH,
     output: 'export',
     eslint: {
       ignoreDuringBuilds: true,
