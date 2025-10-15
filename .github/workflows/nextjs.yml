@@ -55,6 +55,15 @@ jobs:
 
           # Extract all tags that look like v1.2.3
           patch_tags = [tag for tag in tags if re.match(r'^v\d+\.\d+\.\d+$', tag)]
+          
+          # Extract all tags that look like v1.2.3 and sort them (version sort)
+          patch_tags = sorted(
+            [tag for tag in tags if re.match(r'^v\d+\.\d+\.\d+$', tag)],
+            key=lambda tag: [int(x) for x in re.findall(r'\d+', tag)]
+          )
+          
+          # Take the top 30 most recent tags
+          patch_tags = patch_tags[-30:]
 
           # Build mapping: minor -> list of patch tags
           minor_to_patches = {}
