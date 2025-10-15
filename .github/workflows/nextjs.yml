@@ -195,6 +195,13 @@ jobs:
       - name: List all renamed sites
         run: ls
 
+      - name: Unpack the latest at root
+        run: |
+          latest_dir=$(ls | grep -- '-$')
+          echo "Latest directory is $latest_dir"
+          cp -r "$latest_dir"/* .
+          rm -rf "$latest_dir"
+
       - name: Upload aggregate artifact
         uses: actions/upload-pages-artifact@v3
         with:
