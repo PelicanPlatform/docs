@@ -46,7 +46,7 @@ jobs:
           echo "Extracted minors:"
           cat minors.txt
           # Convert minors to JSON array for matrix
-          minors_json=$(jq -R . < minors.txt | jq -s .)
+          minors_json=$(jq -R . < minors.txt | jq -s -c .)
           echo "minors=$minors_json" 
           echo "minors=$minors_json" >> "$GITHUB_OUTPUT"
           # Find the latest minor (sort -V for version sort, tail -1 for latest)
