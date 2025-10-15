@@ -40,7 +40,7 @@ jobs:
         id: set-minors
         run: |
           # Extract tags like v1.2.3, v2.3.4, etc.
-          grep -E '^v[0-9]+\.[0-9]+' ../tags.txt | \
+          grep -E '^v[0-9]+\.[0-9]+' tags.txt | \
           sed -E 's/^(v[0-9]+\.[0-9]+).*/\1/' | \
           sort -u > minors.txt
           minors_json=$(jq -R . < minors.txt | jq -s .)
@@ -125,11 +125,11 @@ jobs:
 
   # Deployment job
   deploy:
+    needs: aggregate-sites
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
