@@ -27,9 +27,9 @@ jobs:
   define-matrix:
     runs-on: ubuntu-latest
     outputs:
-      minors: ${{ steps.set-minors.outputs.minors }}
-      mappings: ${{ steps.set-minors.outputs.mappings }}
-      latest: ${{ steps.set-minors.outputs.latest }}
+      minors: ${{ steps.set-tags.outputs.minors }}
+      mappings: ${{ steps.set-tags.outputs.mappings }}
+      latest: ${{ steps.set-tags.outputs.latest }}
     steps:
       - name: Fetch all tags
         run: |
