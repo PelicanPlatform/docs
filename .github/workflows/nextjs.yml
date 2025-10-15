@@ -63,7 +63,7 @@ jobs:
           )
           
           # Take the top 30 most recent tags
-          patch_tags = patch_tags[-30:]
+          patch_tags = patch_tags[-10:]
 
           # Build mapping: minor -> list of patch tags
           minor_to_patches = {}
