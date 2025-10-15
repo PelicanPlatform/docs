@@ -78,13 +78,13 @@ jobs:
               f.write(f"latest={latest}\n")
           
           # Output minors as JSON array
-          minors_json = json.dumps(latest_mapping.keys())
+          minors_json = json.dumps([*latest_mapping.keys()])
           print(f"minors={minors_json}")
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"minors={minors_json}\n")
 
           # Output mapping as JSON object
-          mapping_json = json.dumps(latest_mapping.values())
+          mapping_json = json.dumps([*latest_mapping.values()])
           print(f"mappings={mapping_json}")
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"mappings={mapping_json}\n")
