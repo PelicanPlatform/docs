@@ -84,7 +84,7 @@ jobs:
           minors = [*latest_mapping.keys()]
           mapping = [*latest_mapping.values()]
           
-          minors.append('')
+          minors.append('latest')
           mapping.append(latest)
           
           # Output minors as JSON array
@@ -152,6 +152,10 @@ jobs:
         if: steps.cache-site.outputs.cache-hit != 'true'
         run: |
           export BASE_PATH="/${{ matrix.minor }}"
+          # If BASE_PATH is /latest, set it to empty string
+          if [ "$BASE_PATH" = "/latest" ]; then
+            export BASE_PATH=""
+          fi
           cd pelican
           make generate USE_DOCKER=1
           echo "Copying the pelican site to the /public folder"
@@ -188,7 +192,13 @@ jobs:
       - name: Rename to minor versions
         run: |
           for dir in docs-${{ github.run_id }}-*; do
-            version=$(echo $dir | sed -E 's/docs-[0-9]+-(v[0-9]+\.[0-9]+)\.[0-9]+/\1/')
+            # Extract the version part after the run id
+            # If 'latest' is present, use 'latest', else use the first vX.Y in the name
+            if [[ "$dir" =~ latest ]]; then
+              version="latest"
+            else
+              version=$(echo $dir | sed -E 's/.*-(v[0-9]+\.[0-9]+).*/\1/')
+            fi
             mv "$dir" "$version"
           done
 
@@ -197,10 +207,8 @@ jobs:
 
       - name: Unpack the latest at root
         run: |
-          latest_dir=$(ls | grep -- '-$')
-          echo "Latest directory is $latest_dir"
-          cp -r "$latest_dir"/* .
-          rm -rf "$latest_dir"
+          cp -r latest/* .
+          rm -rf latest
 
       - name: Upload aggregate artifact
         uses: actions/upload-pages-artifact@v3
