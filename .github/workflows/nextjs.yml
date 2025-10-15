@@ -32,7 +32,7 @@ jobs:
     steps:
       - name: Fetch all tags
         run: |
-          git clone --quiet --depth 1 --no-checkout --filter=blob:none https://github.com/${{ github.repository }} repo
+          git clone --quiet --depth 1 --no-checkout --filter=blob:none https://github.com/PelicanPlatform/pelican repo
           cd repo
           git fetch --tags
           git tag > ../tags.txt
