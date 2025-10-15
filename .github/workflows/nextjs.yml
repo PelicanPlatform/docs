@@ -29,7 +29,6 @@ jobs:
     outputs:
       minors: ${{ steps.set-tags.outputs.minors }}
       mappings: ${{ steps.set-tags.outputs.mappings }}
-      latest: ${{ steps.set-tags.outputs.latest }}
     steps:
       - name: Fetch all tags
         run: |
@@ -82,18 +81,20 @@ jobs:
 
           # Output latest minor
           latest = [*latest_mapping.values()][-1] if minors else ''
-          print(f"latest={latest}")
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-              f.write(f"latest={latest}\n")
+          minors = [*latest_mapping.keys()]
+          mapping = [*latest_mapping.values()]
+          
+          minors.append('')
+          mapping.append(latest)
           
           # Output minors as JSON array
-          minors_json = json.dumps([*latest_mapping.keys()])
+          minors_json = json.dumps(minors)
           print(f"minors={minors_json}")
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"minors={minors_json}\n")
 
           # Output mapping as JSON object
-          mapping_json = json.dumps([*latest_mapping.values()])
+          mapping_json = json.dumps(mapping)
           print(f"mappings={mapping_json}")
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"mappings={mapping_json}\n")
@@ -193,9 +194,6 @@ jobs:
 
       - name: List all renamed sites
         run: ls
-
-      - name: Update latest
-        run: cp -r ${{ needs.define-matrix.outputs.latest }} .
 
       - name: Upload aggregate artifact
         uses: actions/upload-pages-artifact@v3
