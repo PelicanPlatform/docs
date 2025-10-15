@@ -28,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       minors: ${{ steps.set-minors.outputs.minors }}
+      mappings: ${{ steps.set-minors.outputs.mappings }}
       latest: ${{ steps.set-minors.outputs.latest }}
     steps:
       - name: Fetch all tags
@@ -36,27 +37,57 @@ jobs:
           cd repo
           git fetch --tags
           git tag > ../tags.txt
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
       - name: Extract unique minor tags and latest
-        id: set-minors
+        id: set-tags
+        shell: python
         run: |
-          # Extract tags like v1.2.3, v2.3.4, etc.
-          grep -E '^v[0-9]+\.[0-9]+' tags.txt | \
-          sed -E 's/^(v[0-9]+\.[0-9]+).*/\1/' | \
-          sort -u > minors.txt
-          echo "Extracted minors:"
-          cat minors.txt
-          # Convert minors to JSON array for matrix
-          minors_json=$(jq -R . < minors.txt | jq -s -c .)
-          echo "minors=$minors_json" 
-          echo "minors=$minors_json" >> "$GITHUB_OUTPUT"
-          # Find the latest minor (sort -V for version sort, tail -1 for latest)
-          latest=$(sort -V minors.txt | tail -1)
-          echo "Latest minor: $latest"
-          echo "latest=$latest" >> "$GITHUB_OUTPUT"
-      - name: Show minors and latest
-        run: |
-          cat minors.txt
-          echo "Latest minor: $(sort -V minors.txt | tail -1)"
+          import re, json, os
+
+          # Read tags from file
+          with open('tags.txt') as f:
+              tags = [line.strip() for line in f if line.strip()]
+
+          # Extract all tags that look like v1.2.3
+          patch_tags = [tag for tag in tags if re.match(r'^v\d+\.\d+\.\d+$', tag)]
+
+          # Build mapping: minor -> list of patch tags
+          minor_to_patches = {}
+          for tag in patch_tags:
+              m = re.match(r'^(v\d+\.\d+)\.\d+$', tag)
+              if m:
+                  minor = m.group(1)
+                  minor_to_patches.setdefault(minor, []).append(tag)
+
+          # For each minor, get the latest patch (version sort)
+          def version_key(tag):
+              return [int(x) for x in re.findall(r'\d+', tag)]
+
+          minors = sorted(minor_to_patches.keys(), key=lambda x: [int(i) for i in x[1:].split('.')])
+          latest_mapping = {minor: sorted(minor_to_patches[minor], key=version_key)[-1] for minor in minors}
+
+          # Output latest minor
+          latest = minors[-1] if minors else ''
+          print(f"latest={latest}")
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"latest={latest}\n")
+          
+          # Output minors as JSON array
+          minors_json = json.dumps(latest_mapping.keys())
+          print(f"minors={minors_json}")
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"minors={minors_json}\n")
+
+          # Output mapping as JSON object
+          mapping_json = json.dumps(latest_mapping.values())
+          print(f"mappings={mapping_json}")
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"mappings={mapping_json}\n")
 
   # Build job
   build:
@@ -71,19 +102,38 @@ jobs:
         with:
           submodules: 'recursive'
 
+      - name: Get minor to patch mapping
+        id: get-patch
+        shell: python
+        run: | 
+          
+          import os
+          
+          mapping = ${{ needs.define-matrix.outputs.mappings }}
+          minors = ${{ needs.define-matrix.outputs.minors }}
+          minor = "${{ matrix.minor }}"
+          
+          index = minors.index(minor)  # Ensure minor is valid
+          patch = mapping[index]
+          
+          # Export patch as output
+          print(f"patch={patch}")
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"patch={patch}\n")
+
       - name: Checkout pelican submodule at tag
         run: |
           cd pelican
           git fetch --tags
-          git checkout ${{ matrix.minor }}
+          git checkout ${{ steps.get-patch.outputs.patch }}
           cd ../
 
       - name: Cache built site
         id: cache-site
         uses: actions/cache@v4
         with:
-          path: ./${{ matrix.minor }}
-          key: pelican-doc-site-${{ matrix.minor }}
+          path: ./${{ steps.get-patch.outputs.patch }}
+          key: pelican-doc-site-${{ steps.get-patch.outputs.patch }}
 
       - name: Go-Generate (build site) if cache miss
         if: steps.cache-site.outputs.cache-hit != 'true'
@@ -99,13 +149,13 @@ jobs:
           npm ci
           npm run build
           # Move the output to a versioned directory
-          cp -r out ./${{ matrix.minor }}
+          cp -r out ./${{ steps.get-patch.outputs.patch }}
 
       - name: Upload versioned site artifact
         uses: actions/upload-artifact@v4
         with:
-          name: docs-${{ matrix.minor }}
-          path: ./${{ matrix.minor }}
+          name: docs-${{ steps.get-patch.outputs.patch }}
+          path: ./${{ steps.get-patch.outputs.patch }}
 
   # Aggregate built sites
   aggregate-sites:
