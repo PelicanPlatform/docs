@@ -156,6 +156,8 @@ jobs:
           if [ "$BASE_PATH" = "/latest" ]; then
             export BASE_PATH=""
           fi
+          export VERSIONS='${{ needs.define-matrix.outputs.minors }}'
+          echo $VERSIONS
           cd pelican
           make generate USE_DOCKER=1
           echo "Copying the pelican site to the /public folder"
