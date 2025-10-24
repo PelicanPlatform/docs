@@ -73,6 +73,16 @@ export const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ paramet
 								Root Default: {parameter?.root_default === "" ? '""' : parameter?.root_default.toString()}
 							</Typography>
 					}
+					{parameter?.client_default &&
+							<Typography variant="body2">
+								Client Default: {parameter?.client_default === "" ? '""' : parameter?.client_default.toString()}
+							</Typography>
+					}
+					{parameter?.server_default &&
+							<Typography variant="body2">
+								Server Default: {parameter?.server_default === "" ? '""' : parameter?.server_default.toString()}
+							</Typography>
+					}
 				</Box>
 			</Paper>
 	  </Box>
