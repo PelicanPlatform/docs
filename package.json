@@ -4,6 +4,7 @@
   "description": "Documentation for Pelican",
   "scripts": {
     "dev": "node --env-file .env.local scripts/dev.mjs",
+    "prebuild": "node --env-file .env.local scripts/setup.mjs",
     "build": "next build",
     "postbuild": "pagefind --site .next/server/app --output-path out/_pagefind && next-image-export-optimizer",
     "start": "npx serve@latest out"

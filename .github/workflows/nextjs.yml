@@ -24,71 +24,206 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  define-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      minors: ${{ steps.set-tags.outputs.minors }}
+      mappings: ${{ steps.set-tags.outputs.mappings }}
+    steps:
+      - name: Fetch all tags
+        run: |
+          git clone --quiet --depth 1 --no-checkout --filter=blob:none https://github.com/PelicanPlatform/pelican repo
+          cd repo
+          git fetch --tags
+          git tag > ../tags.txt
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Extract unique minor tags and latest
+        id: set-tags
+        shell: python
+        run: |
+          import re, json, os
+
+          # Read tags from file
+          with open('tags.txt') as f:
+              tags = [line.strip() for line in f if line.strip()]
+
+          # Extract all tags that look like v1.2.3
+          patch_tags = [tag for tag in tags if re.match(r'^v\d+\.\d+\.\d+$', tag)]
+          
+          # Extract all tags that look like v1.2.3 and sort them (version sort)
+          patch_tags = sorted(
+            [tag for tag in tags if re.match(r'^v\d+\.\d+\.\d+$', tag)],
+            key=lambda tag: [int(x) for x in re.findall(r'\d+', tag)]
+          )
+          
+          # IMPORTANT: Take all versions after v7.18.0
+          patch_tags = [tag for tag in patch_tags if [int(x) for x in re.findall(r'\d+', tag)] >= [7, 18, 0]]
+
+          # Build mapping: minor -> list of patch tags
+          minor_to_patches = {}
+          for tag in patch_tags:
+              m = re.match(r'^(v\d+\.\d+)\.\d+$', tag)
+              if m:
+                  minor = m.group(1)
+                  minor_to_patches.setdefault(minor, []).append(tag)
+
+          # For each minor, get the latest patch (version sort)
+          def version_key(tag):
+              return [int(x) for x in re.findall(r'\d+', tag)]
+
+          minors = sorted(minor_to_patches.keys(), key=lambda x: [int(i) for i in x[1:].split('.')])
+          latest_mapping = {minor: sorted(minor_to_patches[minor], key=version_key)[-1] for minor in minors}
+
+          # Output latest minor
+          latest = [*latest_mapping.values()][-1] if minors else ''
+          minors = [*latest_mapping.keys()]
+          mapping = [*latest_mapping.values()]
+          
+          minors.append('latest')
+          mapping.append(latest)
+          
+          # Output minors as JSON array
+          minors_json = json.dumps(minors)
+          print(f"minors={minors_json}")
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"minors={minors_json}\n")
+
+          # Output mapping as JSON object
+          mapping_json = json.dumps(mapping)
+          print(f"mappings={mapping_json}")
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"mappings={mapping_json}\n")
+
   # Build job
   build:
     runs-on: ubuntu-latest
+    needs: define-matrix
+    strategy:
+      matrix:
+        minor: ${{ fromJSON(needs.define-matrix.outputs.minors) }}
     steps:
-      - name: Checkout
+
+      - name: Get minor to patch mapping
+        id: get-patch
+        shell: python
+        run: | 
+          
+          import os
+          
+          mapping = ${{ needs.define-matrix.outputs.mappings }}
+          minors = ${{ needs.define-matrix.outputs.minors }}
+          minor = "${{ matrix.minor }}"
+          
+          index = minors.index(minor)  # Ensure minor is valid
+          patch = mapping[index]
+          
+          # Export patch as output
+          print(f"patch={patch}")
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"patch={patch}\n")
+
+      - name: Cache built site
+        id: cache-site
+        uses: actions/cache@v4
+        with:
+          path: ./${{ steps.get-patch.outputs.patch }}
+          key: pelican-doc-site-${{ matrix.minor }}-${{ steps.get-patch.outputs.patch }}
+
+      - name: Checkout main repo and submodules
+        if: steps.cache-site.outputs.cache-hit != 'true'
         uses: actions/checkout@v4
         with:
           submodules: 'recursive'
 
-      - name: View Pelican Version
+      - name: Checkout pelican submodule at tag
+        if: steps.cache-site.outputs.cache-hit != 'true'
         run: |
           cd pelican
-          git log
+          git fetch --tags
+          git checkout ${{ steps.get-patch.outputs.patch }}
           cd ../
 
-      - name: Go-Generate
+      - name: Go-Generate (build site) if cache miss
+        if: steps.cache-site.outputs.cache-hit != 'true'
         run: |
-          # Build the pelican site
+          export BASE_PATH="/${{ matrix.minor }}"
+          # If BASE_PATH is /latest, set it to empty string
+          if [ "$BASE_PATH" = "/latest" ]; then
+            export BASE_PATH=""
+          fi
+          export VERSIONS='${{ needs.define-matrix.outputs.minors }}'
+          echo $VERSIONS
           cd pelican
           make generate USE_DOCKER=1
-          
           echo "Copying the pelican site to the /public folder"
-  
-          # Copy the parameters.json file to the /public/static folder
           mkdir -p ../public/static
           cp docs/parameters.json ../public/static/parameters.json
-      - name: Detect package manager
-        id: detect-package-manager
-        run: |
-          if [ -f "./yarn.lock" ]; then
-            echo "manager=yarn" >> $GITHUB_OUTPUT
-            echo "command=install" >> $GITHUB_OUTPUT
-            echo "runner=yarn" >> $GITHUB_OUTPUT
-            exit 0
-          elif [ -f "./package.json" ]; then
-            echo "manager=npm" >> $GITHUB_OUTPUT
-            echo "command=ci" >> $GITHUB_OUTPUT
-            echo "runner=npx --no-install" >> $GITHUB_OUTPUT
-            exit 0
-          else
-            echo "Unable to determine package manager"
-            exit 1
-          fi
-      - name: Setup Node
-        uses: actions/setup-node@v4
+          cd ../
+          # Build with Next.js
+          npm ci
+          npm run build
+          # Move the output to a versioned directory
+          cp -r out ./${{ steps.get-patch.outputs.patch }}
+
+      - name: Upload versioned site artifact
+        uses: actions/upload-artifact@v4
         with:
-          node-version: "20"
-          cache: ${{ steps.detect-package-manager.outputs.manager }}
-          cache-dependency-path: ./package-lock.json
-      - name: Install dependencies
-        run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
-      - name: Build with Next.js
-        run: ${{ steps.detect-package-manager.outputs.runner }} npm run build
-      - name: Upload artifact
+          name: docs-${{ github.run_id }}-${{ matrix.minor }}-${{ steps.get-patch.outputs.patch }}
+          path: ./${{ steps.get-patch.outputs.patch }}
+
+  # Aggregate built sites
+  aggregate-sites:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - define-matrix
+    steps:
+      - name: Download all site artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: docs-${{ github.run_id }}-*
+
+      - name: List all aggregated sites
+        run: ls -l
+
+      - name: Rename to minor versions
+        run: |
+          for dir in docs-${{ github.run_id }}-*; do
+            # Extract the version part after the run id
+            # If 'latest' is present, use 'latest', else use the first vX.Y in the name
+            if [[ "$dir" =~ latest ]]; then
+              version="latest"
+            else
+              version=$(echo $dir | sed -E 's/.*-(v[0-9]+\.[0-9]+).*/\1/')
+            fi
+            mv "$dir" "$version"
+          done
+
+      - name: List all renamed sites
+        run: ls
+
+      - name: Unpack the latest at root
+        run: |
+          cp -r latest/* .
+          rm -rf latest
+
+      - name: Upload aggregate artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./out
+          path: .
 
   # Deployment job
   deploy:
+    needs: aggregate-sites
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
