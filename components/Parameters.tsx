@@ -6,7 +6,6 @@ import { ParametersArray, ParameterDetail } from "../utils/types";
 import { ParameterBox } from "./ParameterBox";
 import { ParameterChips } from './ParameterChips';
 import { Link } from "@mui/icons-material";
-import { DarkLightContainer } from '@/utils/darkLightContainer';
 
 const Parameters: React.FC<{ parameters: ParametersArray }> = ({ parameters }) => {
 	const [searchValue, setSearchValue] = useState('');
@@ -40,7 +39,7 @@ const Parameters: React.FC<{ parameters: ParametersArray }> = ({ parameters }) =
 	  	return groups;
 	}, [filteredParameters]);
 	return (
-		<DarkLightContainer>
+		<>
 	  	<Box>
 			<Autocomplete
 			disablePortal
@@ -99,7 +98,7 @@ const Parameters: React.FC<{ parameters: ParametersArray }> = ({ parameters }) =
 				<Divider sx={{ height: "0.5em", backgroundColor: "#0885ff", width: "100%", borderRadius: "0.5em" }} />
 				)}
 				{groupParams.map((param, index) => (
-				<ParameterBox key={index} parameter={param} />
+				<ParameterBox key={param.name} parameter={param} />
 				))}
 			</Box>
 			))}
@@ -107,7 +106,7 @@ const Parameters: React.FC<{ parameters: ParametersArray }> = ({ parameters }) =
 			<Typography variant="h5">No results found</Typography>
 			) : null}
 	  	</Box>
-		</DarkLightContainer>
+		</>
 	);
   };
   
