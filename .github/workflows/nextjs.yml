@@ -165,7 +165,7 @@ jobs:
           cp docs/parameters.json ../public/static/parameters.json
           cd ../
           # Build with Next.js
-          npm ci
+          npm i
           npm run build
           # Move the output to a versioned directory
           cp -r out ./${{ steps.get-patch.outputs.patch }}
