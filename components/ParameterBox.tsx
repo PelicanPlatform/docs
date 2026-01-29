@@ -11,7 +11,7 @@ export const ParameterBox: React.FC<{ parameter: ParameterDetail }> = ({ paramet
 	const parts = parameter.name.split('.');
 	const groupName = parts.length > 1 ? parts.slice(0, -1).join('.') : null;
 	const parameterName = parts.length > 1 ? parts[parts.length - 1] : parameter.name;
-	const parameterId = parameter.name.replace(".", "-")
+	const parameterId = parameter.name.replaceAll(".", "-")
 
 	return (
 	  <Box

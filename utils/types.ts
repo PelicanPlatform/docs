@@ -64,7 +64,9 @@ export interface ParameterDetail {
 	name: string;
 	type: string;
   root_default?: string;
-  }
+  client_default?: string;
+  server_default?: string;
+}
   
 export interface Parameter {
 	[key: string]: ParameterDetail;

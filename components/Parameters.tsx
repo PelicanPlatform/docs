@@ -61,47 +61,52 @@ const Parameters: React.FC<{ parameters: ParametersArray }> = ({ parameters }) =
 			setSelectedComponent(component);
 			setSearchValue('');
 			}} />
-			{Object.entries(groupedParameters).map(([group, groupParams]) => (
-			<Box 
-				key={group}
-				onMouseEnter={() => setHover(true)}
-				onMouseLeave={() => setHover(false)}
-				>
-				<Typography 
-					sx={{ 
-						marginTop: ".5em"
-							
-					}} 
-					variant="h4" 
-					gutterBottom 
-					id={group}
-				>
-					{group}
-					{hover && group && group !== "" && (
-						<IconButton 
-							size={"small"}
-							onClick={async (e: React.MouseEvent<HTMLButtonElement>) => {
-								e.stopPropagation()
-								// Copy link to clipboard
-								const url = new URL(window.location.href);
-								url.hash = group
-								await navigator.clipboard.writeText(url.toString());
-								window.location.hash = group 
-							}}
-						>
-							<Link fontSize={"small"}/>
-						</IconButton>
-					)}
-				</Typography>
-				
-				{group && group !== "" && (
-				<Divider sx={{ height: "0.5em", backgroundColor: "#0885ff", width: "100%", borderRadius: "0.5em" }} />
-				)}
-				{groupParams.map((param, index) => (
-				<ParameterBox key={param.name} parameter={param} />
-				))}
-			</Box>
-			))}
+			{Object.entries(groupedParameters).map(([group, groupParams]) => {
+
+        const group_hash = group.replaceAll('.', '-');
+
+        return (
+          <Box
+            key={group}
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+          >
+            <Typography
+              sx={{
+                marginTop: ".5em"
+
+              }}
+              variant="h4"
+              gutterBottom
+              id={group_hash}
+            >
+              {group}
+              {hover && group && group !== "" && (
+                <IconButton
+                  size={"small"}
+                  onClick={async (e: React.MouseEvent<HTMLButtonElement>) => {
+                    e.stopPropagation()
+                    // Copy link to clipboard
+                    const url = new URL(window.location.href);
+                    url.hash = group_hash
+                    await navigator.clipboard.writeText(url.toString());
+                    window.location.hash = group_hash
+                  }}
+                >
+                  <Link fontSize={"small"}/>
+                </IconButton>
+              )}
+            </Typography>
+
+            {group && group !== "" && (
+              <Divider sx={{height: "0.5em", backgroundColor: "#0885ff", width: "100%", borderRadius: "0.5em"}}/>
+            )}
+            {groupParams.map((param, index) => (
+              <ParameterBox key={param.name} parameter={param}/>
+            ))}
+          </Box>
+        )
+      })}
 			{filteredParameters.length === 0 && (searchValue || selectedComponent) ? (
 			<Typography variant="h5">No results found</Typography>
 			) : null}
