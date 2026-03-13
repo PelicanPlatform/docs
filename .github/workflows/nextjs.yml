@@ -163,6 +163,7 @@ jobs:
           echo "Copying the pelican site to the /public folder"
           mkdir -p ../public/static
           cp docs/parameters.json ../public/static/parameters.json
+          cp docs/error_codes.json ../public/static/error_codes.json 2>/dev/null || true
           cd ../
           # Build with Next.js
           npm i

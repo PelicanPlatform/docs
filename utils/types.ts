@@ -85,6 +85,14 @@ export interface PreProps {
   children: React.ReactNode;
 }
 
+export interface ErrorCode {
+  clientExitCode: number;
+  code: number;
+  description: string;
+  retryable: boolean;
+  type: string;
+}
+
 export const SemverRegex = /^v(\d+)\.(\d+)\.(\d+)$/;
 
 export enum OSEnums {
