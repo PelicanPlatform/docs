@@ -15,8 +15,12 @@ const Parameters: React.FC<{ parameters: ParametersArray }> = ({ parameters }) =
 	const filteredParameters = useMemo(() => {
 		const searchLower = searchValue.toLowerCase();
 		return parameters.filter((parameter) => {
+
 			const parameterName = Object.keys(parameter)[0].toLowerCase();
 			const detail = Object.values(parameter)[0];
+
+      // Filter out the hidden parameters
+      if (detail.hidden) return false
 
 			// Ensure detail.components is defined and is an array before calling includes.
 			const isComponentMatch = selectedComponent ? (Array.isArray(detail.components) && detail.components.includes(selectedComponent)) : true;

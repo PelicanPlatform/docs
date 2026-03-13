@@ -66,6 +66,7 @@ export interface ParameterDetail {
   root_default?: string;
   client_default?: string;
   server_default?: string;
+  hidden?: boolean;
 }
   
 export interface Parameter {
