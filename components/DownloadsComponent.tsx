@@ -1,9 +1,9 @@
 "use client"
 import React, { useState, useEffect, useMemo } from 'react';
-import { Box, CircularProgress} from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import fetchFilteredReleases from "../utils/fetchReleases";
-import { FilteredRelease, ArchEnums, OSEnums, SemverRegex } from '../utils/types';
-import {OperatingSystems, Architectures, Versions} from './Filters';
+import { FilteredRelease, ArchEnums, OSEnums, SemverRegex, BinaryTypeEnums } from '../utils/types';
+import { OperatingSystems, Architectures, Versions, BinaryTypes } from './Filters';
 import ReleasesTable from './ReleasesTable';
 import { useTheme } from '@mui/material/styles';
 import { parseEnum } from '@/utils/utils';
@@ -12,6 +12,7 @@ interface optionMatrix {
     arch: ArchEnums | ""
     os: OSEnums | ""
     version: string
+    binaryType: BinaryTypeEnums | ""
 }
 
 const downloadTableHeader = [
@@ -26,11 +27,12 @@ const DownloadsComponent: React.FC = () => {
     const [originalData, setOriginalData] = useState<FilteredRelease[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [versions, setVersions] = useState([])
+    const [versions, setVersions] = useState<string[]>([])
     const [selectedOptions, setSelectedOptions] = useState<optionMatrix>({
         arch: ArchEnums.X86_64,
         os: OSEnums.Linux,
-        version: ""
+        version: "",
+        binaryType: BinaryTypeEnums.Client,
     });
     
     const theme = useTheme();
@@ -59,6 +61,18 @@ const DownloadsComponent: React.FC = () => {
         }
     };
 
+    const handleBinaryType = (
+        event: React.MouseEvent<HTMLElement, MouseEvent>,
+        newBinaryType: string | null,
+    ) => {
+        if (newBinaryType !== selectedOptions.binaryType) {
+            setSelectedOptions(prevOptions => ({
+                ...prevOptions,
+                binaryType: newBinaryType as BinaryTypeEnums || ''
+            }));
+        }
+    };
+
     useEffect(() => {
         const fetchAssets = async () => {
             setLoading(true);
@@ -79,16 +93,19 @@ const DownloadsComponent: React.FC = () => {
         const qVersion = params.get("version")
         const qArch = parseEnum(params.get("arch"), ArchEnums)
         const qOS = parseEnum(params.get("os"), OSEnums)
+        const qBinaryType = parseEnum(params.get("binaryType"), BinaryTypeEnums)
         const queryMatrix: optionMatrix = {
             arch: qArch || '',
             os: qOS || '',
-            version: SemverRegex.test(qVersion) ? qVersion : ""
+            version: SemverRegex.test(qVersion) ? qVersion : "",
+            binaryType: qBinaryType || BinaryTypeEnums.Client,
         }
         setSelectedOptions((prev) => (
             {
                 arch: queryMatrix.arch ? queryMatrix.arch : prev.arch,
                 os: queryMatrix.os ? queryMatrix.os : prev.os,
                 version: queryMatrix.version ? queryMatrix.version : prev.version,
+                binaryType: queryMatrix.binaryType ? queryMatrix.binaryType : prev.binaryType,
             }
         ))
 
@@ -107,8 +124,9 @@ const DownloadsComponent: React.FC = () => {
         const filteredAssets = filteredByVersion.assets.filter(asset => {
             const osMatch = !selectedOptions.os || asset.osInternal.toLowerCase().includes(selectedOptions.os.toLowerCase());
             const archMatch = !selectedArch || asset.architecture === selectedArch;
+            const binaryTypeMatch = !selectedOptions.binaryType || asset.binaryType === selectedOptions.binaryType;
       
-            return osMatch && archMatch;
+            return osMatch && archMatch && binaryTypeMatch;
           })
           .sort((a, b) => {
             // Sort by OS
@@ -151,6 +169,7 @@ const DownloadsComponent: React.FC = () => {
                         },
                     }}>
                         <Versions handleChange={(e) => {setSelectedOptions((prev) => ({...prev, version: e.target.value}))}} versions={versions} value={selectedOptions.version}/>
+                        <BinaryTypes handle={handleBinaryType} defaultBinaryType={selectedOptions.binaryType} />
                         <OperatingSystems handle={handleOs} defaultOs={selectedOptions.os} defaultArch={selectedOptions.arch} data={Object.values(OSEnums)} />
                         <Architectures handle={handleArch} defaultArch={selectedOptions.arch} defaultOs={selectedOptions.os} archs={Object.values(ArchEnums)} />
                     </Box>
