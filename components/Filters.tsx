@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, ToggleButton, ToggleButtonGroup, Typography, Select, MenuItem, SelectChangeEvent } from '@mui/material';
-import { compatibilityRules, ArchitecturesProps, OperatingSystemsProps, VersionProps } from '../utils/types';
+import { compatibilityRules, ArchitecturesProps, OperatingSystemsProps, VersionProps, BinaryTypesProps, BinaryTypeEnums } from '../utils/types';
 
 
 export const Versions:React.FC<VersionProps> = ({handleChange, value, versions}) => {
@@ -90,3 +90,26 @@ export const OperatingSystems:React.FC<OperatingSystemsProps> = ({handle, defaul
   )
 }
 
+export const BinaryTypes: React.FC<BinaryTypesProps> = ({handle, defaultBinaryType}) => {
+  return (
+    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "0 10px 0 0" }}>
+      <Typography variant="overline" display="block" gutterBottom>
+        Binary Type
+      </Typography>
+      <ToggleButtonGroup
+        color="primary"
+        value={defaultBinaryType}
+        exclusive
+        aria-label="Binary Type"
+        onChange={handle}
+        size="small"
+      >
+        {Object.values(BinaryTypeEnums).map((type) => (
+          <ToggleButton key={type} value={type}>
+            {type}
+          </ToggleButton>
+        ))}
+      </ToggleButtonGroup>
+    </Box>
+  )
+}

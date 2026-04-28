@@ -3,10 +3,13 @@ import {
     Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Link, Tooltip,
     Chip} 
     from '@mui/material';
-import { ReleasesTableProps } from '../utils/types';
+import {PackageType, ReleasesTableProps} from '../utils/types';
 
-const OSDFNote = "This package is compatible with Open Science Data Federation (OSDF). Download this package if you plan to use it in OSDF. Note that you need to install Pelican package first."
-const ServerNote = "This package includes Pelican origin/cache server dependencies. Download this package if you want to serve a Pelican origin or cache server. Note that you need to install Pelican package first."
+const PackageNotes = {
+    OSDF: "This package is compatible with Open Science Data Federation (OSDF). Download this package if you plan to use it in OSDF. Note that you need to install Pelican package first.",
+    Server: "This package includes Pelican origin/cache server dependencies. Download this package if you want to serve a Pelican origin or cache server. Note that you need to install Pelican package first.",
+    Client: "This package includes Pelican client dependencies. Download this package if you want to use the Pelican client."
+}
 
 const ReleasesTable: React.FC<ReleasesTableProps> = ({ release , rowNames }) => {
     return(
@@ -31,13 +34,7 @@ const ReleasesTable: React.FC<ReleasesTableProps> = ({ release , rowNames }) => 
                         </Link>
                     </TableCell>
                     <TableCell>
-                        {
-                            asset.specialPackage && (
-                                <Tooltip title={asset.specialPackage === "OSDF" ? OSDFNote : ServerNote} placement='right' arrow>
-                                    <Chip label={asset.specialPackage} color="primary" variant="outlined" onClick={() => {window.location.hash = "#install-osdf-or-server-package"}}/>
-                                </Tooltip>
-                            )
-                        }
+                        <PackageTypeChip type={asset.specialPackage} />
                     </TableCell>
                     </TableRow>
                 ))}
@@ -45,6 +42,14 @@ const ReleasesTable: React.FC<ReleasesTableProps> = ({ release , rowNames }) => 
         </Table>
         </TableContainer>
     );
+}
+
+const PackageTypeChip: React.FC<{type: PackageType}> = ({type}) => {
+  return (
+    <Tooltip title={PackageNotes[type]} placement='right' arrow>
+      <Chip label={type} color="primary" variant="outlined"/>
+    </Tooltip>
+  )
 }
 
 export default ReleasesTable;

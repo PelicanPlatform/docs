@@ -20,6 +20,11 @@ export interface OperatingSystemsProps {
     data: Array<string>;
   }
 
+export interface BinaryTypesProps {
+    handle: (event: React.MouseEvent<HTMLElement, MouseEvent>, newBinaryType: string | null) => void;
+    defaultBinaryType: string;
+  }
+
 export interface Asset {
 name: string;
 browser_download_url: string;
@@ -44,13 +49,16 @@ name: string;
 downloadUrl: string;
 id: number;
 assetVersion: string; // Version of the release this asset belongs to
-specialPackage: "OSDF" | "Server" | ""; // Special package for OSDF/Pelican server
+specialPackage: PackageType; // Special package for OSDF/Pelican server
 osInternal: string;
 osDisplayed: string;
 architecture: string;
+binaryType: BinaryTypeEnums | "";
 packageInfo?: string;
 packageDescription?: string;
 }
+
+export type PackageType = "OSDF" | "Server" | "Client"
 
 export interface ReleasesTableProps {
     rowNames: Array<string>;
@@ -106,6 +114,11 @@ export enum ArchEnums {
   X86_64 = "X86_64",
   ARM64 = "ARM64",
   PowerPC = "PowerPC"
+}
+
+export enum BinaryTypeEnums {
+  Client = "Client",
+  Server = "Server"
 }
 
 export const archMapping = {

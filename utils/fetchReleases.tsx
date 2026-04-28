@@ -1,5 +1,5 @@
 import semver from 'semver'
-import { Release, FilteredRelease, packageDisplayedOS, OSEnums, archMapping } from './types';
+import { Release, FilteredRelease, packageDisplayedOS, OSEnums, archMapping, BinaryTypeEnums } from './types';
 import {getAllGithub} from "@/utils/utils";
 
 function getDisplayedOS(filename: string) {
@@ -61,7 +61,10 @@ async function fetchFilteredReleases(): Promise<FilteredRelease[]> {
           osInternal: asset.name.includes('checksums.txt') ? '' : asset.name.includes('Darwin') ? 'macOS' : Object.values(OSEnums).find(os => asset.name.includes(os)) || 'Linux',
           osDisplayed: getDisplayedOS(asset.name),
           architecture: getArchitecture(asset.name),
-          specialPackage: asset.name.includes('-server-') ? "Server" : asset.name.includes('-osdf-') ? "OSDF" : ""
+          specialPackage: asset.name.includes('-osdf-') ? "OSDF"
+            : (semver.lt(release.tag_name, 'v7.26.0') && /^pelican-server[_-]/.test(asset.name)) ? "Server"
+            : "Client",
+          binaryType: asset.name.startsWith('pelican-server') ? BinaryTypeEnums.Server : BinaryTypeEnums.Client
         };
       })
     });
