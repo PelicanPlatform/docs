@@ -49,7 +49,7 @@ name: string;
 downloadUrl: string;
 id: number;
 assetVersion: string; // Version of the release this asset belongs to
-specialPackage: "OSDF" | "Server" | ""; // Special package for OSDF/Pelican server
+specialPackage: PackageType; // Special package for OSDF/Pelican server
 osInternal: string;
 osDisplayed: string;
 architecture: string;
@@ -57,6 +57,8 @@ binaryType: BinaryTypeEnums | "";
 packageInfo?: string;
 packageDescription?: string;
 }
+
+export type PackageType = "OSDF" | "Server" | "Client"
 
 export interface ReleasesTableProps {
     rowNames: Array<string>;

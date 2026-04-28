@@ -63,7 +63,7 @@ async function fetchFilteredReleases(): Promise<FilteredRelease[]> {
           architecture: getArchitecture(asset.name),
           specialPackage: asset.name.includes('-osdf-') ? "OSDF"
             : (semver.lt(release.tag_name, 'v7.26.0') && /^pelican-server[_-]/.test(asset.name)) ? "Server"
-            : "",
+            : "Client",
           binaryType: asset.name.startsWith('pelican-server') ? BinaryTypeEnums.Server : BinaryTypeEnums.Client
         };
       })

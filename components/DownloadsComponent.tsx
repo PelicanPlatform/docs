@@ -20,7 +20,7 @@ const downloadTableHeader = [
     "Architecture",
     "OS",
     "File",
-    "Variant"
+    "Type"
 ]
 
 const DownloadsComponent: React.FC = () => {
@@ -29,10 +29,10 @@ const DownloadsComponent: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [versions, setVersions] = useState<string[]>([])
     const [selectedOptions, setSelectedOptions] = useState<optionMatrix>({
-        arch: ArchEnums.X86_64,
-        os: OSEnums.Linux,
+        arch: "",
+        os: "",
         version: "",
-        binaryType: BinaryTypeEnums.Client,
+        binaryType: "",
     });
     
     const theme = useTheme();
@@ -88,30 +88,30 @@ const DownloadsComponent: React.FC = () => {
                 setLoading(false);
             }
         };
-
-        const params = new URLSearchParams(window?.location.search)
-        const qVersion = params.get("version")
-        const qArch = parseEnum(params.get("arch"), ArchEnums)
-        const qOS = parseEnum(params.get("os"), OSEnums)
-        const qBinaryType = parseEnum(params.get("binaryType"), BinaryTypeEnums)
-        const queryMatrix: optionMatrix = {
-            arch: qArch || '',
-            os: qOS || '',
-            version: SemverRegex.test(qVersion) ? qVersion : "",
-            binaryType: qBinaryType || BinaryTypeEnums.Client,
-        }
-        setSelectedOptions((prev) => (
-            {
-                arch: queryMatrix.arch ? queryMatrix.arch : prev.arch,
-                os: queryMatrix.os ? queryMatrix.os : prev.os,
-                version: queryMatrix.version ? queryMatrix.version : prev.version,
-                binaryType: queryMatrix.binaryType ? queryMatrix.binaryType : prev.binaryType,
-            }
-        ))
-
         fetchAssets();
     }, []);
-    
+
+    useEffect(() => {
+      const params = new URLSearchParams(window?.location.search)
+      const qVersion = params.get("version")
+      const qArch = parseEnum(params.get("arch"), ArchEnums)
+      const qOS = parseEnum(params.get("os"), OSEnums)
+      const qBinaryType = parseEnum(params.get("binaryType"), BinaryTypeEnums)
+      const queryMatrix: optionMatrix = {
+        arch: qArch || '',
+        os: qOS || '',
+        version: SemverRegex.test(qVersion || "") && qVersion ? qVersion : "",
+        binaryType: qBinaryType || "",
+      }
+      setSelectedOptions((prev) => (
+        {
+          arch: queryMatrix.arch ? queryMatrix.arch : prev.arch,
+          os: queryMatrix.os ? queryMatrix.os : prev.os,
+          version: queryMatrix.version ? queryMatrix.version : prev.version,
+          binaryType: queryMatrix.binaryType ? queryMatrix.binaryType : prev.binaryType,
+        }
+      ))
+    }, []);
 
     const filteredData = useMemo(() => {
         const selectedArch = selectedOptions.arch;
