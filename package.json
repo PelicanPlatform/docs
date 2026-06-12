@@ -6,7 +6,7 @@
     "dev": "node --env-file .env.local scripts/dev.mjs",
     "prebuild": "node --env-file .env.local scripts/setup.mjs",
     "build": "next build",
-    "postbuild": "pagefind --site .next/server/app --output-path out/_pagefind && next-image-export-optimizer",
+    "postbuild": "pagefind --site .next/server/app --output-path out/_pagefind && next-image-export-optimizer && node scripts/llm-full.mjs",
     "start": "npx serve@latest out"
   },
   "repository": {
@@ -41,7 +41,10 @@
   "devDependencies": {
     "@types/node": "18.11.10",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "node-html-parser": "^7.1.0",
     "pagefind": "^1.3.0",
+    "turndown": "^7.2.4",
+    "turndown-plugin-gfm": "^1.0.2",
     "typescript": "^4.9.3"
   }
 }
