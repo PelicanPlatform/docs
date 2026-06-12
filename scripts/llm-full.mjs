@@ -189,7 +189,7 @@ async function main() {
 		`> Source: ${BASE_URL}\n`;
 
 	const full = header + "\n" + sections.join("\n\n---\n\n") + "\n";
-	fs.writeFileSync(path.join(OUT_DIR, "llm-full.txt"), full);
+	fs.writeFileSync(path.join(OUT_DIR, "llms-full.txt"), full);
 
 	const llmsTxt =
 		`# Pelican Documentation\n\n` +
