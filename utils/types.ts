@@ -159,5 +159,3 @@ export const packageDisplayedOS = [
     os: "Linux"
   }
 ]
-
-export const parameterGroups = ["origin", "registry", "director", "client", "cache"];

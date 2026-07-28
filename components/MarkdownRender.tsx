@@ -80,6 +80,7 @@ const MarkdownRender: React.FC<{ content: string }> = ({ content }) => {
                 strong: ({node, children}) => <Box component="span" display="inline" fontWeight="bold">{children}</Box>,
                 text: ({ node, children }) => <Typography variant="body1" display="inline">{children}</Typography>,
                 div: ({node, children}) => <Box>{children}</Box>,
+                p: ({ node, children }) => <Typography variant="body1" display="inline" mb={1}>{children}</Typography>,
             }}
         />
     );
