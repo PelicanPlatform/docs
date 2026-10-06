@@ -5,9 +5,12 @@ import {
     from '@mui/material';
 import {PackageType, ReleasesTableProps} from '../utils/types';
 
-const PackageNotes = {
+// Default tooltip per chip type. An asset may carry its own
+// packageDescription (set at fetch time) that overrides this, which is how
+// the Server chip explains add-on versus standalone packaging by version.
+const PackageNotes: Record<PackageType, string> = {
     OSDF: "This package is compatible with Open Science Data Federation (OSDF). Download this package if you plan to use it in OSDF. Note that you need to install Pelican package first.",
-    Server: "This package includes Pelican origin/cache server dependencies. Download this package if you want to serve a Pelican origin or cache server. Note that you need to install Pelican package first.",
+    Server: "This package provides the Pelican server (Origin, Cache, Director, or Registry).",
     Client: "This package includes Pelican client dependencies. Download this package if you want to use the Pelican client."
 }
 
@@ -34,7 +37,7 @@ const ReleasesTable: React.FC<ReleasesTableProps> = ({ release , rowNames }) => 
                         </Link>
                     </TableCell>
                     <TableCell>
-                        <PackageTypeChip type={asset.specialPackage} />
+                        <PackageTypeChip type={asset.specialPackage} description={asset.packageDescription} />
                     </TableCell>
                     </TableRow>
                 ))}
@@ -44,9 +47,9 @@ const ReleasesTable: React.FC<ReleasesTableProps> = ({ release , rowNames }) => 
     );
 }
 
-const PackageTypeChip: React.FC<{type: PackageType}> = ({type}) => {
+const PackageTypeChip: React.FC<{type: PackageType, description?: string}> = ({type, description}) => {
   return (
-    <Tooltip title={PackageNotes[type]} placement='right' arrow>
+    <Tooltip title={description ?? PackageNotes[type]} placement='right' arrow>
       <Chip label={type} color="primary" variant="outlined"/>
     </Tooltip>
   )

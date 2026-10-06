@@ -1,6 +1,9 @@
 import semver from 'semver'
-import { Release, FilteredRelease, packageDisplayedOS, OSEnums, archMapping, BinaryTypeEnums } from './types';
+import { Release, FilteredRelease, packageDisplayedOS, OSEnums, archMapping, BinaryTypeEnums, PackageType } from './types';
 import {getAllGithub} from "@/utils/utils";
+
+const ServerAddonNote = "This package adds the Pelican origin/cache server dependencies on top of the Pelican client package. Download it if you want to serve a Pelican origin or cache. The Pelican client package must be installed first.";
+const ServerStandaloneNote = "This is the standalone pelican-server binary. Download it if you want to run an Origin, Cache, Director, or Registry. It does not require the Pelican client package.";
 
 function getDisplayedOS(filename: string) {
   for (const rule of packageDisplayedOS) {
@@ -49,10 +52,19 @@ async function fetchFilteredReleases(): Promise<FilteredRelease[]> {
     // Add the minor version to the set of included minor releases
     includedMinorReleases.add(minorVersion);
 
+    // Before v7.26.0 pelican-server was an add-on package layered on top of
+    // the pelican client package; from v7.26.0 it is a standalone binary.
+    // The chip reads "Server" either way; only the explanation differs.
+    const serverIsAddon = semver.lt(release.tag_name, 'v7.26.0');
+
     filteredReleases.push({
       version: release.tag_name,
       prerelease: release.prerelease,
       assets: release.assets.map(asset => {
+        const isServer = /^pelican-server[_-]/.test(asset.name);
+        const specialPackage: PackageType = asset.name.includes('-osdf-') ? "OSDF"
+          : isServer ? "Server"
+          : "Client";
         return {
           name: asset.name,
           downloadUrl: asset.browser_download_url,
@@ -61,10 +73,9 @@ async function fetchFilteredReleases(): Promise<FilteredRelease[]> {
           osInternal: asset.name.includes('checksums.txt') ? '' : asset.name.includes('Darwin') ? 'macOS' : Object.values(OSEnums).find(os => asset.name.includes(os)) || 'Linux',
           osDisplayed: getDisplayedOS(asset.name),
           architecture: getArchitecture(asset.name),
-          specialPackage: asset.name.includes('-osdf-') ? "OSDF"
-            : (semver.lt(release.tag_name, 'v7.26.0') && /^pelican-server[_-]/.test(asset.name)) ? "Server"
-            : "Client",
-          binaryType: asset.name.startsWith('pelican-server') ? BinaryTypeEnums.Server : BinaryTypeEnums.Client
+          specialPackage,
+          packageDescription: isServer ? (serverIsAddon ? ServerAddonNote : ServerStandaloneNote) : undefined,
+          binaryType: isServer ? BinaryTypeEnums.Server : BinaryTypeEnums.Client
         };
       })
     });
